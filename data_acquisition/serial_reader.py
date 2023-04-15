@@ -1,13 +1,20 @@
 import serial
 import time
 from threading import Thread
+import serial.tools.list_ports as list_ports
+from rich import print
 
 class SerialReader:
 
-    def __init__(self, port, listener=None, new_thread=True):
+    def __init__(self, port=None, listener=None, new_thread=True):
         if not port:
-            raise Exception("No serial port specified")
-        
+            print(*[f"[{i}] {p}" for i,(p,_,_) in enumerate(serial.tools.list_ports.comports())], sep="\n")
+            try:
+                p = int(input("Which port to use? "))
+                port = list_ports.comports()[p][0]
+            except:
+                raise Exception("Invalid port")
+            
         self.port = port
         self.listener = listener
 
@@ -64,4 +71,4 @@ def process_sample(sample):
     print("Received sample with %d values" % len(sample))
 
 if __name__ == "__main__":
-    SerialReader(port="/dev/cu.usbmodem1101", listener=process_sample)
+    SerialReader(listener=process_sample)

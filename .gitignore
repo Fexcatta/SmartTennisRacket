@@ -236,3 +236,5 @@ dataset
 
 curr_sample.png
 .DS_Store
+acc.png
+gyr.png

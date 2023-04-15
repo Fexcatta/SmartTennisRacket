@@ -1,5 +1,6 @@
 from pathlib import Path
 import csv
+from rich import print
 
 class DatasetManager:
 
@@ -57,3 +58,9 @@ class DatasetManager:
             print(f"Saved sample to {path}")
         except IOError:
             print("Error saving sample")
+        
+        if self.listener:
+            self.listener()
+    
+    def set_listener(self, listener):
+        self.listener = listener
