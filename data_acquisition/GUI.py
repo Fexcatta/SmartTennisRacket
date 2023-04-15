@@ -115,6 +115,9 @@ class SampleWindow:
         self.nothing_button = Button(buttons, text="Nothing", command=self.nothing, font=("Helvetica", 28))
         self.nothing_button.pack(side="left", padx=10)
 
+        self.delete_button = Button(buttons, text="Delete", command=self.delete, font=("Helvetica", 28))
+        self.delete_button.pack(side="left", padx=10)
+
     def forehand(self):
         print("Selected forehand")
         self.dataset_manager.save_sample(self.sample, DatasetManager.Label.FOREHAND)
@@ -128,6 +131,10 @@ class SampleWindow:
     def nothing(self):
         print("Selected nothing")
         self.dataset_manager.save_sample(self.sample, DatasetManager.Label.NOTHING)
+        self.root.destroy()
+
+    def delete(self):
+        print("Deleted sample")
         self.root.destroy()
 
 def run_gui(dataset_manager, serial_reader):
