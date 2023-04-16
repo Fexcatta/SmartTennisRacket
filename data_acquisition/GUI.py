@@ -6,6 +6,8 @@ from dataset_manager import DatasetManager
 import matplotlib
 import matplotlib.pyplot as plt
 from pandas import DataFrame
+from inference import InferenceEngine
+from rich import print
 
 plt.style.use('seaborn')
 matplotlib.use("SVG")
@@ -70,6 +72,7 @@ class MainWindow:
         serial_reader.set_listener(self.process_sample)
 
     def process_sample(self, sample):
+        print(f"\nReceived sample n. {self.dataset_manager.total_count} with {len(sample)} measurements")
         root = Toplevel(self.root)
         SampleWindow(root, sample, self.dataset_manager)
 
@@ -118,6 +121,9 @@ class SampleWindow:
         self.delete_button = Button(buttons, text="Delete", command=self.delete, font=("Helvetica", 28))
         self.delete_button.pack(side="left", padx=10)
 
+        self.inference_button = Button(buttons, text="Inference", command=self.inference, font=("Helvetica", 28), fg="#ff8700")
+        self.inference_button.pack(side="left", padx=10)
+
     def forehand(self):
         print("Selected forehand")
         self.dataset_manager.save_sample(self.sample, DatasetManager.Label.FOREHAND)
@@ -135,6 +141,12 @@ class SampleWindow:
 
     def delete(self):
         print("Deleted sample")
+        self.root.destroy()
+
+    def inference(self):
+        engine = InferenceEngine()
+        c, p, t = engine.predict(self.sample)
+        print(f"Predicted: [dark_orange]{c} ({p*100:.1f}%)[/dark_orange], inference time: [green]{t*1000:.2f}ms[/green]")
         self.root.destroy()
 
 def run_gui(dataset_manager, serial_reader):

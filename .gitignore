@@ -238,3 +238,6 @@ curr_sample.png
 .DS_Store
 acc.png
 gyr.png
+
+*.onnx
+*.pt
