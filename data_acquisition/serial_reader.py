@@ -3,10 +3,12 @@ import time
 from threading import Thread
 import serial.tools.list_ports as list_ports
 from rich import print
+from reader import Reader
 
-class SerialReader:
+class SerialReader(Reader):
 
     def __init__(self, port=None, listener=None, new_thread=True):
+        super.__init__(listener)
         if not port:
             print(*[f"[{i}] {p}" for i,(p,_,_) in enumerate(serial.tools.list_ports.comports())], sep="\n")
             try:
@@ -19,53 +21,50 @@ class SerialReader:
         self.listener = listener
 
         if new_thread:
-            Thread(target=self.connect).start()
+            Thread(target=self.__connect).start()
         else:
-            self.connect()
+            self.__connect()
 
-    def connect(self):
+    def __connect(self):
         self.conn = None
         try:
             self.conn = serial.Serial(self.port, 115200, timeout=1)
             time.sleep(5)
             print(f"Connected to {self.port}")
-            self.start_listening()
+            self.__start_listening()
         except:
             print("Could not open serial port, retrying in 5 seconds")
             time.sleep(5)
-            self.connect()
+            self.__connect()
     
-    def start_listening(self):
+    def __start_listening(self):
         try:
             while True:
-                if "%" in self.read():
+                if "%" in self.__read():
                     self.sample = []
-                    l = self.read()
+                    l = self.__read()
                     while "%" not in l:
-                        self.sample.append(self.parse_line(l))
-                        l = self.read()
+                        self.sample.append(self.__parse_line(l))
+                        l = self.__read()
                     
                     if self.listener:
                         self.listener(self.sample)
         except Exception as e:
             print(e)
             print("Serial connection lost, reconnecting")
-            self.connect()
+            self.__connect()
 
-    def read(self):
+    def __read(self):
         line = self.conn.readline()
         if line:
             return line.decode('utf-8').strip()
         
         return ""
 
-    def parse_line(self, line):
+    def __parse_line(self, line):
         vals = [float(v) for v in line.split(";")[:-1]]
         labels = ["accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ"]
         return dict(zip(labels, vals))
-
-    def set_listener(self, listener):
-        self.listener = listener
 
 def process_sample(sample):
     print("Received sample with %d values" % len(sample))
