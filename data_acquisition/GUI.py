@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from pandas import DataFrame
 from inference import InferenceEngine
 from rich import print
+from reader import Reader
 
 plt.style.use('seaborn')
 matplotlib.use("SVG")
@@ -26,11 +27,11 @@ def save_charts(sample):
     fig.savefig("gyr.png", bbox_inches='tight')
 
 class MainWindow:
-    def __init__(self, root, dataset_manager, serial_reader):
+    def __init__(self, root, dataset_manager, reader: Reader):
         self.root = root
         self.dataset_manager = dataset_manager
         self.dataset_manager.set_listener(self.update_counts)
-        self.serial_reader = serial_reader
+        self.reader = reader
         
         root.title("Data Acquisition")
         root.geometry("350x400")
@@ -66,13 +67,24 @@ class MainWindow:
         self.nothing_count_label = Label(labels, text=self.dataset_manager.nothing_count, font=("Helvetica", 24), padx=20, pady=20)
         self.nothing_count_label.grid(row=3, column=1, sticky="e")
 
+        self.connection_label = Label(root, text="Not connected", font=("Helvetica", 32), padx=20, pady=20, foreground="red")
+        self.connection_label.place(relx=0.5, rely=0.9, anchor="center")
+
         #self.read_button = Button(root, text="Read", command=self.process_sample, font=("Helvetica", 24))
         #self.read_button.place(relx=0.5, rely=0.9, anchor="center")
 
-        serial_reader.set_listener(self.process_sample)
+        reader.set_sample_received_listener(self.process_sample)
+        reader.set_connection_listener(self.update_connection_state)
+    
+    def update_connection_state(self, state):
+        if state == Reader.ConnectionState.CONNECTED:
+            self.connection_label.config(text="Connected", foreground="#00dd22")
+        elif state == Reader.ConnectionState.DISCONNECTED:
+            self.connection_label.config(text="Not connected", foreground="red")
+        elif state == Reader.ConnectionState.RECEIVING:
+            self.connection_label.config(text="Receiving", foreground="#00d0ff")
 
     def process_sample(self, sample):
-        print(f"\nReceived sample n. {self.dataset_manager.total_count} with {len(sample)} measurements")
         root = Toplevel(self.root)
         SampleWindow(root, sample, self.dataset_manager)
 
@@ -149,7 +161,7 @@ class SampleWindow:
         print(f"Predicted: [dark_orange]{c} ({p*100:.1f}%)[/dark_orange], inference time: [green]{t*1000:.2f}ms[/green]")
         self.root.destroy()
 
-def run_gui(dataset_manager, serial_reader):
+def run_gui(dataset_manager, reader):
     root = Tk()
-    main_window = MainWindow(root, dataset_manager, serial_reader)
+    main_window = MainWindow(root, dataset_manager, reader)
     root.mainloop()

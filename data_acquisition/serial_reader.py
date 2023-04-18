@@ -7,8 +7,8 @@ from reader import Reader
 
 class SerialReader(Reader):
 
-    def __init__(self, port=None, listener=None, new_thread=True):
-        super.__init__(listener)
+    def __init__(self, port=None, sample_received_listener=None, connection_listener=None, new_thread=True):
+        super().__init__(sample_received_listener, connection_listener)
         if not port:
             print(*[f"[{i}] {p}" for i,(p,_,_) in enumerate(serial.tools.list_ports.comports())], sep="\n")
             try:
@@ -18,7 +18,6 @@ class SerialReader(Reader):
                 raise Exception("Invalid port")
             
         self.port = port
-        self.listener = listener
 
         if new_thread:
             Thread(target=self.__connect).start()
@@ -31,6 +30,8 @@ class SerialReader(Reader):
             self.conn = serial.Serial(self.port, 115200, timeout=1)
             time.sleep(5)
             print(f"Connected to {self.port}")
+            if self.connection_listener:
+                self.connection_listener(Reader.ConnectionState.CONNECTED)
             self.__start_listening()
         except:
             print("Could not open serial port, retrying in 5 seconds")
@@ -41,16 +42,22 @@ class SerialReader(Reader):
         try:
             while True:
                 if "%" in self.__read():
+                    if self.connection_listener:
+                        self.connection_listener(Reader.ConnectionState.RECEIVING)
                     self.sample = []
                     l = self.__read()
                     while "%" not in l:
                         self.sample.append(self.__parse_line(l))
                         l = self.__read()
                     
-                    if self.listener:
-                        self.listener(self.sample)
+                    if self.sample_received_listener:
+                        if self.connection_listener:
+                            self.connection_listener(Reader.ConnectionState.CONNECTED)
+                        self.sample_received_listener(self.sample)
+
         except Exception as e:
-            print(e)
+            if self.connection_listener:
+                self.connection_listener(Reader.ConnectionState.DISCONNECTED)
             print("Serial connection lost, reconnecting")
             self.__connect()
 
@@ -65,9 +72,3 @@ class SerialReader(Reader):
         vals = [float(v) for v in line.split(";")[:-1]]
         labels = ["accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ"]
         return dict(zip(labels, vals))
-
-def process_sample(sample):
-    print("Received sample with %d values" % len(sample))
-
-if __name__ == "__main__":
-    SerialReader(listener=process_sample)
