@@ -8,8 +8,17 @@
 #include <ArduinoBLE.h>
 #include <nRF52840_Timers.h>
 
-#define BUFFER_SIZE 28
-#define DATA_SIZE 100
+#define DEBUG_INDEX 1 //1- send debug id, 0- only data
+
+#if DEBUG_INDEX
+  #define STRUCT_SIZE 28
+#else
+  #define STRUCT_SIZE 24
+#endif
+
+#define STRUCT_NUM 8 //how many structs to send in a sigle packet (MAX 10 with no identifier or MAX 8 with identifier)
+#define CHARACTERISTIC_SIZE STRUCT_SIZE*STRUCT_NUM  //BLE buffer size
+#define DATA_SIZE 1000 //how many acquisition to take before sending them
 
 
 
@@ -21,13 +30,13 @@ const char *namePeripheral = "Arduino Nano 33 BLE";
 
 BLEService sensorService(uuidService);
 
-BLECharacteristic sensorCharacteristic(uuidSensorCharacteristic, BLERead | BLEIndicate, BUFFER_SIZE, 0);
+BLECharacteristic sensorCharacteristic(uuidSensorCharacteristic, BLERead | BLEIndicate, CHARACTERISTIC_SIZE, 0);
 BLEBoolCharacteristic triggerCharacteristic(uuidTriggerCharacteristic, BLERead | BLEWrite);
 
 Timer tmr3(3, TIMER_MODE, bitMode_16);
 
 
-
+#if DEBUG_INDEX
 struct dataStruct {
   float accX;
   float accY;
@@ -35,20 +44,38 @@ struct dataStruct {
   float gyrX;
   float gyrY;
   float gyrZ;
-  int   id;
+  unsigned int id;
 };
 
-struct dataStruct dataBuffer[DATA_SIZE];
+unsigned int indexTest = 0;
+
+#else
+struct dataStruct {
+  float accX;
+  float accY;
+  float accZ;
+  float gyrX;
+  float gyrY;
+  float gyrZ;
+};
+#endif
+
+dataStruct data[DATA_SIZE];
+
+struct packetStruct {
+  dataStruct dataBuffer[STRUCT_NUM];
+};
+
+packetStruct packetBuffer;
 
 
 volatile bool updateSensors = true;
-unsigned long indexTest = 0;
 bool trigger = false;
 unsigned int bufferIndex = 0;
 unsigned int i = 0;
 
 
-//unsigned long time1, time2;
+unsigned long time1, time2, timeX;
 
 
 
@@ -120,11 +147,18 @@ void loop() {
 /*
     time1 = micros();
 */
+
     updateSensors = false;
-    getIMUdata(dataBuffer[bufferIndex].accX, dataBuffer[bufferIndex].accY, dataBuffer[bufferIndex].accZ, dataBuffer[bufferIndex].gyrX, dataBuffer[bufferIndex].gyrY, dataBuffer[bufferIndex].gyrZ);
-    dataBuffer[bufferIndex].id = indexTest;
+    
+    getIMUdata(data[bufferIndex].accX, data[bufferIndex].accY, data[bufferIndex].accZ, data[bufferIndex].gyrX, data[bufferIndex].gyrY, data[bufferIndex].gyrZ);
+    #if DEBUG_INDEX
+      data[bufferIndex].id = indexTest;
+      indexTest += 1;
+    #endif
     bufferIndex += 1;
-    indexTest += 1;
+    
+    
+    
 /*
     time2 = micros() - time1;
     Serial.print(bufferIndex);
@@ -135,23 +169,22 @@ void loop() {
 
 
   if (trigger && bufferIndex >= DATA_SIZE && BLE.connected()) {  //buffer is full, start sending data
-/*
-    time1 = micros();
-*/
+
     tmr3.stopTimer(); //stop timer
-    sensorCharacteristic.writeValue((byte *) &dataBuffer[i], sizeof(dataBuffer[i]));
-    i += 1;
-    
-/*
-    time2 = micros() - time1;
-    Serial.print(bufferIndex);
-    Serial.print("\t");
-    Serial.println(time2);
-*/
+
+    for (uint8_t j = 0; j < STRUCT_NUM; j++) {
+      packetBuffer.dataBuffer[j] = data[i+j];
+    }
+
+
+    sensorCharacteristic.writeValue((byte *) &packetBuffer, CHARACTERISTIC_SIZE);
+    i += STRUCT_NUM;
 
   }
 
   if (trigger && i >= DATA_SIZE) {
+
+    timeX = 0;
 
     i = 0;
     trigger = false; //update trigger flag
