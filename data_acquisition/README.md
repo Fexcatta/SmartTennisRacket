@@ -6,8 +6,23 @@
 
 `python main.py`
 
+# Dataset
+The dataset is created in the same folder, and it is composed by 3 directories:
+- `forehand`
+- `backhand`
+- `nothing`
+
+Each sample is saved in CSV format, with the following columns:
+- `accX`
+- `accY`
+- `accZ`
+- `gyrX`
+- `gyrY`
+- `gyrZ`
+
 # Data transmission
 
+## Serial transmission
 Data must be transmitted as:
 ```
 %
@@ -28,3 +43,14 @@ For example:
 ...
 %
 ```
+
+# Bluetooth transmission
+Data must be transmitted as BLOB packets with number of bytes multiple of 28 (24 without id).
+Where each chunk of 28 (24) bytes is composed as follow:
+```
+[accX][accY][accZ][gyrX][gyrY][gyrZ]([id])
+```
+First 6 values are in fp32 format.
+Id is in int32 format.
+
+All values are transmitted in little endian.

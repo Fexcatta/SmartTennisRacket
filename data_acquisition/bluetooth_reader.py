@@ -85,7 +85,7 @@ class BluetoothReader(Reader):
         if self.connection_listener:
             self.connection_listener(Reader.ConnectionState.DISCONNECTED)
 
-        print("Disconnected, trying to reconnect...")
+        print("Connection lost, trying to reconnect...")
 
         self.loop.create_task(self.__connect())
 
