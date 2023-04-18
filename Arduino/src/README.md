@@ -25,17 +25,17 @@ Program that waits a trigger signal through BLE to acquire data for a set amount
 
 The define values change how the program runs.
 
-```
+```c++
 #define DEBUG_INDEX 1 //1- send debug id, 0- only data
 ```
 If set to (1) the data is sent with an integer identifier.
 
-```
+```c++
 #define STRUCT_NUM 8 //how many structs to send in a sigle packet (MAX 10 with no identifier or MAX 8 with identifier)
 ```
 This value allows to edit how many consecutive data aquisitions to send using a single BLE packet. Each float struct is 28 or 24 bytes long, which means there's a maximum of 8 or 10 structs per packet (BLE specification allows max 248 bytes of data).
 
-```
+```c++
 #define DATA_SIZE 1000 //how many acquisition to take before sending them
 ```
 This value sets the amount of acquisitions after which the data is sent.
