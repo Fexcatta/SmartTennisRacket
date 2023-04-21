@@ -1,6 +1,6 @@
 # BLEDataAcquisition
 
-Program that waits a trigger signal through BLE to acquire data for a set amount of time. Once the time expires the data acquired is sent using BLE. Data is sent as a collection of floats.
+Program that waits a trigger signal through BLE to acquire data for a set amount of time. Once the time expires the data acquired is sent using BLE. Data is sent as a collection of floats and an optional identifier integer.
 
 Data is sent in this format:
 
