@@ -1,41 +1,34 @@
-# BLEliveData
-
-Program that acquires data and sends it over BLE instantly.
-
-
-# BLEbufferData
-
-Program that waits a trigger signal through BLE to acquire data for a set amount of time. Once the time expires the data acquired is sent using BLE. Data is sent through a string.
-
-The strings are formatted as:
-
-```
-%+06.2f;%+06.2f;%+06.2f;%+08.2f;%+08.2f;%+08.2f;%07d
-
-+00.25;+01.02;-00.65;+0000.38;-1235.73;+0049.38;0000234
-accX  ; accY ; accZ ;  gyrX  ;  gyrY  ;  gyrZ  ;   id
-```
-
-The trigger for the start of data acquisition is a boolean BLECharacteristic that can be written and read. When set ('1') the data acquisition starts. It is then cleared once all data has been sent through BLE. It can be read to check if the transmission has ended and the MCU is able to start a new acquisition.
-
-
-# BLEbufferDataFloat
+# BLEDataAcquisition
 
 Program that waits a trigger signal through BLE to acquire data for a set amount of time. Once the time expires the data acquired is sent using BLE. Data is sent as a collection of floats.
 
-The define values change how the program runs.
+Data is sent in this format:
+
+```[accX][accY][accZ][gyrX][gyrY][gyrZ]([id])```
+
+---
+
+In Constants.h it is possible to modify #define values in order to customize the program.
 
 ```c++
-#define DEBUG_INDEX 1 //1- send debug id, 0- only data
+#define  DATA_INDEX  1 //1- send debug id; 0- only data
 ```
-If set to (1) the data is sent with an integer identifier.
-
+- If set to (1) the data is sent with an integer identifier.
+---
 ```c++
-#define STRUCT_NUM 8 //how many structs to send in a sigle packet (MAX 10 with no identifier or MAX 8 with identifier)
+#define  DATA_INTERVAL_S  10 //how many seconds to acquire data for
 ```
-This value allows to edit how many consecutive data aquisitions to send using a single BLE packet. Each float struct is 28 or 24 bytes long, which means there's a maximum of 8 or 10 structs per packet (BLE specification allows max 248 bytes of data).
+- This value sets the amount of seconds during which data from sensors is taken.
 
+---
 ```c++
-#define DATA_SIZE 1000 //how many acquisition to take before sending them
+#define  DATA_RATE_MS  3 //how many milliseconds between reads of the sensors
 ```
-This value sets the amount of acquisitions after which the data is sent.
+- This value sets the number of milliseconds between each consecutive acquisition of sensor data. 
+
+---
+```c++
+#define  TIMER_PRESCALER  6 //prescaler value for the timer used for data acquisition (16MHz / 2^(TIMER_PRESCALER)) [MAX 8]
+```
+- This value changes the timer clock used to calculate time for data acquisitions. It follows the following formula:
+	$ TCLK = 16MHz / 2 ^ {PRESCALER} $
