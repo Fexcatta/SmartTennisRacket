@@ -31,4 +31,4 @@ In Constants.h it is possible to modify #define values in order to customize the
 #define  TIMER_PRESCALER  6 //prescaler value for the timer used for data acquisition (16MHz / 2^(TIMER_PRESCALER)) [MAX 8]
 ```
 - This value changes the timer clock used to calculate time for data acquisitions. It follows the following formula:
-	$ TCLK = 16MHz / 2 ^ {PRESCALER} $
+	*TIMER_CLOCK = 16MHz / 2^(PRESCALER)*
