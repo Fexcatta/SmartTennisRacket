@@ -25,7 +25,7 @@ I2C clock speed: BMI270.ccp(line:40)
   _wire->setClock(400000);
 ```
 
-Accelometer ORD: BMI270.ccp(line:220)
+Accelometer ODR: BMI270.ccp(line:220)
 ```c++
   sens_cfg[0].cfg.acc.odr = BMI2_ACC_ODR_800HZ;
 ```
