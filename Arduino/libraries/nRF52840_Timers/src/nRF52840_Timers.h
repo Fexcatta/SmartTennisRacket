@@ -46,10 +46,14 @@ class Timer {
 
 		void setPrescaler(uint8_t timerPrescaler);
 
+		uint32_t captureTimer(uint8_t compareIndex);
+
 
 		void startTimer();
 
 		void stopTimer();
+
+		void clearTimer();
 
 		void count();
 

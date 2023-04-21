@@ -505,6 +505,59 @@ void Timer::setPrescaler(uint8_t timerPrescaler) {
 }
 
 
+uint32_t Timer::captureTimer(uint8_t compareIndex) {
+
+	uint8_t cc_index;
+	uint32_t result;
+
+
+	if (_timerIndex < 3) {
+		if (compareIndex > 3) {
+			cc_index = 3;
+		} else {
+			cc_index = compareIndex;
+		}
+	} else {
+		if (compareIndex > 5) {
+			cc_index = 5;
+		} else {
+			cc_index = compareIndex;
+		}
+	}
+
+
+	if (_timerIndex == 0) {
+
+		NRF_TIMER0->TASKS_CAPTURE[cc_index] = 1;
+		result = NRF_TIMER0->CC[cc_index];
+	
+	} else if (_timerIndex == 1) {
+
+		NRF_TIMER1->TASKS_CAPTURE[cc_index] = 1;
+		result = NRF_TIMER1->CC[cc_index];
+
+	} else if (_timerIndex == 2) {
+
+		NRF_TIMER2->TASKS_CAPTURE[cc_index] = 1;
+		result = NRF_TIMER2->CC[cc_index];
+
+	} else if (_timerIndex == 3) {
+
+		NRF_TIMER3->TASKS_CAPTURE[cc_index] = 1;
+		result = NRF_TIMER3->CC[cc_index];
+
+	} else if (_timerIndex == 4) {
+
+		NRF_TIMER4->TASKS_CAPTURE[cc_index] = 1;
+		result = NRF_TIMER4->CC[cc_index];
+
+	}
+
+	return result;
+
+
+}
+
 
 
 
@@ -563,6 +616,33 @@ void Timer::stopTimer() {
 	} else if (_timerIndex == 4) {
 
 		NRF_TIMER4->TASKS_STOP = 1;
+
+	}
+
+}
+
+
+void Timer::clearTimer() {
+
+	if (_timerIndex == 0) {
+
+		NRF_TIMER0->TASKS_CLEAR = 1;
+	
+	} else if (_timerIndex == 1) {
+
+		NRF_TIMER1->TASKS_CLEAR = 1;
+
+	} else if (_timerIndex == 2) {
+
+		NRF_TIMER2->TASKS_CLEAR = 1;
+
+	} else if (_timerIndex == 3) {
+
+		NRF_TIMER3->TASKS_CLEAR = 1;
+
+	} else if (_timerIndex == 4) {
+
+		NRF_TIMER4->TASKS_CLEAR = 1;
 
 	}
 
