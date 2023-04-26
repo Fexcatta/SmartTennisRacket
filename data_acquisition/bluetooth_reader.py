@@ -6,14 +6,12 @@ from tqdm import tqdm
 import asyncio
 from rich import print
 from aioconsole import ainput
-from bleak.backends.device import BLEDevice
-import sys
 
 class BluetoothReader(Reader):
 
     IMU_CHARACTERISTIC_UUID = "19B10001-E8F2-537E-4F6C-D104768A1214"
     TRIGGER_CHARACTERISTIC_UUID = "19B10002-E8F2-537E-4F6C-D104768A1214"
-    MEASUREMENTS_PER_SAMPLE = 1000
+    MEASUREMENTS_PER_SAMPLE = 3336
     ID_PRESENT = True
 
     def __init__(self, device_address=None, sample_received_listener=None, connection_listener=None, new_thread=True):
@@ -117,6 +115,14 @@ class BluetoothReader(Reader):
 
         self.loop.create_task(self.__connect())
 
+    async def __send_trigger(self):
+        if self.__client.is_connected:
+            await self.__client.write_gatt_char(self.TRIGGER_CHARACTERISTIC_UUID, bytearray(b'\x01'), response=True)
+            print("Sent trigger")
+
+    def send_trigger(self):
+        asyncio.run_coroutine_threadsafe(self.__send_trigger(), self.loop)
+
     async def __connect(self):    
         self.__client = BleakClient(self.device_address, disconnected_callback=self.__disconnect_callback, timeout=5)
         
@@ -128,11 +134,6 @@ class BluetoothReader(Reader):
                 self.connection_listener(Reader.ConnectionState.CONNECTED)
             
             await self.__client.start_notify(self.IMU_CHARACTERISTIC_UUID, self.__packet_received)
-
-            await asyncio.sleep(10)
-
-            await self.__client.write_gatt_char(self.TRIGGER_CHARACTERISTIC_UUID, bytearray(int(1)))
-            print("Sent trigger: ", bytearray(int(1)))
 
         except Exception as e:
             print("Cannot connect, retrying in 5 seconds...")

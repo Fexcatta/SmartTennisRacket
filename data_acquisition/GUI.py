@@ -34,7 +34,7 @@ class MainWindow:
         self.reader = reader
         
         root.title("Data Acquisition")
-        root.geometry("350x400")
+        root.geometry("350x450")
         root.resizable(False, False)
 
         labels = Frame(root,  padx=20, pady=20)
@@ -68,10 +68,10 @@ class MainWindow:
         self.nothing_count_label.grid(row=3, column=1, sticky="e")
 
         self.connection_label = Label(root, text="Not connected", font=("Helvetica", 32), padx=20, pady=20, foreground="red")
-        self.connection_label.place(relx=0.5, rely=0.9, anchor="center")
+        self.connection_label.place(relx=0.5, rely=0.8, anchor="center")
 
-        #self.read_button = Button(root, text="Read", command=self.process_sample, font=("Helvetica", 24))
-        #self.read_button.place(relx=0.5, rely=0.9, anchor="center")
+        self.read_button = Button(root, text="Send trigger", command=lambda: self.reader.send_trigger(), font=("Helvetica", 24))
+        self.read_button.place(relx=0.5, rely=0.9, anchor="center")
 
         reader.set_sample_received_listener(self.process_sample)
         reader.set_connection_listener(self.update_connection_state)

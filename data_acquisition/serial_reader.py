@@ -72,3 +72,6 @@ class SerialReader(Reader):
         vals = [float(v) for v in line.split(";")[:-1]]
         labels = ["accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ"]
         return dict(zip(labels, vals))
+
+    def send_trigger(self):
+        return NotImplementedError("SerialReader does not support sending triggers")

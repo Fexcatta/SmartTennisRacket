@@ -22,3 +22,10 @@ class Reader(ABC):
         Set the callback function that will be called when the connection state changes
         """
         self.connection_listener = listener
+
+    @abstractmethod
+    def send_trigger(self):
+        """
+        Send a trigger to the device
+        """
+        pass
