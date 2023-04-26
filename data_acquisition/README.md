@@ -1,8 +1,13 @@
-# Install dependencies
+# Data acquisition
+This is the data acquisition software that acquires, labels and stores the samples in one step.
+
+# How to run
+
+## Install dependencies
 
 `pip install -r requirements.txt`
 
-# Run
+## Run
 
 `python main.py`
 
@@ -45,8 +50,8 @@ For example:
 ```
 
 # Bluetooth transmission
-Data must be transmitted as BLOB packets with number of bytes multiple of 28 (24 without id).
-Where each chunk of 28 (24) bytes is composed as follow:
+Data must be transmitted as BLOB packets with number of bytes multiple of 24 (28 with id).
+Where each chunk of 24 (28) bytes is composed as follow:
 ```
 [accX][accY][accZ][gyrX][gyrY][gyrZ]([id])
 ```
