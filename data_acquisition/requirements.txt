@@ -1,3 +1,4 @@
+aioconsole==0.6.1
 async-timeout==4.0.2
 bleak==0.20.1
 coloredlogs==15.0.1

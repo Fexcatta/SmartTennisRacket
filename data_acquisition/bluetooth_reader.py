@@ -1,29 +1,52 @@
 from reader import Reader
 from threading import Thread
 from utils import to_float, to_int
-from bleak import BleakClient
+from bleak import BleakClient, BleakScanner
 from tqdm import tqdm
 import asyncio
 from rich import print
+from aioconsole import ainput
+from bleak.backends.device import BLEDevice
+import sys
 
 class BluetoothReader(Reader):
-    DEVICE_ADDRESS = "00C22CA1-4E9A-0DCA-D713-67BE50AB9603"
-    #DEVICE_ADDRESS = "54A17D1F-A9C9-FD1E-6E48-6B8BF4F6FB5B"
+
     IMU_CHARACTERISTIC_UUID = "19B10001-E8F2-537E-4F6C-D104768A1214"
     TRIGGER_CHARACTERISTIC_UUID = "19B10002-E8F2-537E-4F6C-D104768A1214"
     MEASUREMENTS_PER_SAMPLE = 1000
     ID_PRESENT = True
 
-    def __init__(self, sample_received_listener=None, connection_listener=None, new_thread=True):
+    def __init__(self, device_address=None, sample_received_listener=None, connection_listener=None, new_thread=True):
         super().__init__(sample_received_listener, connection_listener)
         
         self.sample = []
+        self.device_address = device_address
+        self.device_name = None
 
         if new_thread:
             Thread(target=self.__start_listening).start()
         else:
             self.__start_listening()
     
+    async def __discover_and_select_device(self):
+        print("Scanning for devices...")
+        devices = await BleakScanner.discover()
+        
+        if len(devices) == 0:
+            print("No devices found, please try again.")
+            exit()
+
+        for i, d in enumerate(devices):
+            print(f"[{i}] {d.name or d.address}")
+
+        try:
+            choice = int(await ainput("Which device to use? "))
+            self.device_address = devices[choice].address
+            self.device_name = devices[choice].name
+        except:
+            print("Invalid choice")
+
+
     def __start_listening(self):
         try:
             self.loop = asyncio.get_event_loop()
@@ -31,7 +54,11 @@ class BluetoothReader(Reader):
             self.loop = asyncio.new_event_loop()
             asyncio.set_event_loop(self.loop)
 
-        self.loop.run_until_complete(self.__connect())
+        if self.device_address:
+            self.loop.run_until_complete(self.__connect())
+        else:
+            self.loop.run_until_complete(self.__discover_and_select_device())
+            self.loop.run_until_complete(self.__connect())
         self.loop.run_forever()
 
     def __packet_received(self, sender, data):
@@ -91,11 +118,11 @@ class BluetoothReader(Reader):
         self.loop.create_task(self.__connect())
 
     async def __connect(self):    
-        self.__client = BleakClient(self.DEVICE_ADDRESS, disconnected_callback=self.__disconnect_callback, timeout=5)
+        self.__client = BleakClient(self.device_address, disconnected_callback=self.__disconnect_callback, timeout=5)
         
         try:
             await self.__client.connect()
-            print("Connected to", self.DEVICE_ADDRESS)
+            print("Connected to", self.device_name or self.device_address)
             
             if self.connection_listener:
                 self.connection_listener(Reader.ConnectionState.CONNECTED)
@@ -104,7 +131,7 @@ class BluetoothReader(Reader):
 
             await asyncio.sleep(10)
 
-            await self.__client.write_gatt_char(TRIGGER_CHARACTERISTIC_UUID, bytearray(int(1)))
+            await self.__client.write_gatt_char(self.TRIGGER_CHARACTERISTIC_UUID, bytearray(int(1)))
             print("Sent trigger: ", bytearray(int(1)))
 
         except Exception as e:
