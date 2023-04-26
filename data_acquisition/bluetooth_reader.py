@@ -7,9 +7,10 @@ import asyncio
 from rich import print
 
 class BluetoothReader(Reader):
-
-    DEVICE_ADDRESS = "54A17D1F-A9C9-FD1E-6E48-6B8BF4F6FB5B"
+    DEVICE_ADDRESS = "00C22CA1-4E9A-0DCA-D713-67BE50AB9603"
+    #DEVICE_ADDRESS = "54A17D1F-A9C9-FD1E-6E48-6B8BF4F6FB5B"
     IMU_CHARACTERISTIC_UUID = "19B10001-E8F2-537E-4F6C-D104768A1214"
+    TRIGGER_CHARACTERISTIC_UUID = "19B10002-E8F2-537E-4F6C-D104768A1214"
     MEASUREMENTS_PER_SAMPLE = 1000
     ID_PRESENT = True
 
@@ -100,6 +101,12 @@ class BluetoothReader(Reader):
                 self.connection_listener(Reader.ConnectionState.CONNECTED)
             
             await self.__client.start_notify(self.IMU_CHARACTERISTIC_UUID, self.__packet_received)
+
+            await asyncio.sleep(10)
+
+            await self.__client.write_gatt_char(TRIGGER_CHARACTERISTIC_UUID, bytearray(int(1)))
+            print("Sent trigger: ", bytearray(int(1)))
+
         except Exception as e:
             print("Cannot connect, retrying in 5 seconds...")
             await asyncio.sleep(5)
