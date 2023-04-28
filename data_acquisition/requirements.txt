@@ -1,13 +1,17 @@
 aioconsole==0.6.1
 async-timeout==4.0.2
 bleak==0.20.1
+bleak-winrt==1.2.0; sys_platform == 'win32'
+colorama==0.4.6; sys_platform == 'win32'
 coloredlogs==15.0.1
 contourpy==1.0.7
 cycler==0.11.0
 flatbuffers==23.3.3
 fonttools==4.39.3
+future==0.18.3; sys_platform == 'win32'
 humanfriendly==10.0
 importlib-resources==5.12.0
+iso8601==1.1.0; sys_platform == 'win32'
 kiwisolver==1.4.4
 markdown-it-py==2.2.0
 matplotlib==3.7.1
@@ -20,14 +24,16 @@ pandas==2.0.0
 Pillow==9.5.0
 protobuf==4.22.3
 Pygments==2.15.0
-pyobjc-core==9.1.1
-pyobjc-framework-Cocoa==9.1.1
-pyobjc-framework-CoreBluetooth==9.1.1
-pyobjc-framework-libdispatch==9.1.1
+pyobjc-core==9.1.1; sys_platform == 'darwin'
+pyobjc-framework-Cocoa==9.1.1; sys_platform == 'darwin'
+pyobjc-framework-CoreBluetooth==9.1.1; sys_platform == 'darwin'
+pyobjc-framework-libdispatch==9.1.1; sys_platform == 'darwin'
 pyparsing==3.0.9
+pyreadline3==3.4.1; sys_platform == 'win32'
 pyserial==3.5
 python-dateutil==2.8.2
 pytz==2023.3
+PyYAML==6.0; sys_platform == 'win32'
 rich==13.3.4
 six==1.16.0
 sympy==1.11.1
