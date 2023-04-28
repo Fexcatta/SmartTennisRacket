@@ -83,26 +83,34 @@ class BluetoothReader(Reader):
 
     def __parse_packet(self, data):
         measurements = []
-
-        if self.ID_PRESENT:
-            chunk_size = 28
-        else:
-            chunk_size = 24
-
-        # split data into chunks of chunk_size bytes
-        chunks = [data[i:i+chunk_size] for i in range(0, len(data), chunk_size)]
-
-        for chunk in chunks:
-            # split chunk into 6 floats and optionally 1 int (the id)
+        
+        try:
             if self.ID_PRESENT:
-                vals = [to_int(chunk[-4:])] # last 4 bytes are the id
-            
-            vals.extend([to_float(chunk[i:i+4]) for i in range(0, chunk_size, 4)])
+                chunk_size = 28
+            else:
+                chunk_size = 24
 
-            labels = ["id", "accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ", ]
-        
-            measurements.append(dict(zip(labels, vals)))
-        
+            surplus = len(data) % chunk_size
+            if surplus > 0:
+                print(f"[bold red]Received packet with {len(data)} bytes which is not divisible by {chunk_size}, discarding last {surplus} bytes[/red bold]")
+                data = data[:-surplus]
+
+            # split data into chunks of chunk_size bytes
+            chunks = [data[i:i+chunk_size] for i in range(0, len(data), chunk_size)]
+
+            for chunk in chunks:
+                # split chunk into 6 floats and optionally 1 int (the id)
+                if self.ID_PRESENT:
+                    vals = [to_int(chunk[-4:])] # last 4 bytes are the id
+                
+                vals.extend([to_float(chunk[i:i+4]) for i in range(0, chunk_size, 4)])
+
+                labels = ["id", "accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ", ]
+            
+                measurements.append(dict(zip(labels, vals)))
+        except Exception as e:
+            print("Cannot parse packet:", e)
+
         return measurements
 
     def __disconnect_callback(self, sender):
