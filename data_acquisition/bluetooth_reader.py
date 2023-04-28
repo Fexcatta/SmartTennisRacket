@@ -6,13 +6,9 @@ from tqdm import tqdm
 import asyncio
 from rich import print
 from aioconsole import ainput
+from config import config
 
 class BluetoothReader(Reader):
-
-    IMU_CHARACTERISTIC_UUID = "19B10001-E8F2-537E-4F6C-D104768A1214"
-    TRIGGER_CHARACTERISTIC_UUID = "19B10002-E8F2-537E-4F6C-D104768A1214"
-    MEASUREMENTS_PER_SAMPLE = 3336
-    ID_PRESENT = True
 
     def __init__(self, device_address=None, sample_received_listener=None, connection_listener=None, new_thread=True):
         super().__init__(sample_received_listener, connection_listener)
@@ -63,14 +59,14 @@ class BluetoothReader(Reader):
         if len(self.sample) == 0:
             if self.connection_listener:
                 self.connection_listener(Reader.ConnectionState.RECEIVING)
-            self.progress_bar = tqdm(range(self.MEASUREMENTS_PER_SAMPLE), desc="Receiving sample", unit="m")
+            self.progress_bar = tqdm(range(config.get("MEASUREMENTS_PER_SAMPLE")), desc="Receiving sample", unit="m")
         
         measurements = self.__parse_packet(data)
         self.sample.extend(measurements)
         self.progress_bar.update(len(measurements))
         
         # check if sample is complete
-        if len(self.sample) == self.MEASUREMENTS_PER_SAMPLE:
+        if len(self.sample) == config.get("MEASUREMENTS_PER_SAMPLE"):
             self.progress_bar.close()
             if self.connection_listener:
                 self.connection_listener(Reader.ConnectionState.CONNECTED)
@@ -85,7 +81,7 @@ class BluetoothReader(Reader):
         measurements = []
         
         try:
-            if self.ID_PRESENT:
+            if config.get("ID_PRESENT"):
                 chunk_size = 28
             else:
                 chunk_size = 24
@@ -100,7 +96,7 @@ class BluetoothReader(Reader):
 
             for chunk in chunks:
                 # split chunk into 6 floats and optionally 1 int (the id)
-                if self.ID_PRESENT:
+                if config.get("ID_PRESENT"):
                     vals = [to_int(chunk[-4:])] # last 4 bytes are the id
                 
                 vals.extend([to_float(chunk[i:i+4]) for i in range(0, chunk_size, 4)])
@@ -125,7 +121,7 @@ class BluetoothReader(Reader):
 
     async def __send_trigger(self):
         if self.__client.is_connected:
-            await self.__client.write_gatt_char(self.TRIGGER_CHARACTERISTIC_UUID, bytearray(b'\x01'), response=True)
+            await self.__client.write_gatt_char(config.get("TRIGGER_CHARACTERISTIC_UUID"), bytearray(b'\x01'), response=True)
             print("Sent trigger")
 
     def send_trigger(self):
@@ -141,7 +137,7 @@ class BluetoothReader(Reader):
             if self.connection_listener:
                 self.connection_listener(Reader.ConnectionState.CONNECTED)
             
-            await self.__client.start_notify(self.IMU_CHARACTERISTIC_UUID, self.__packet_received)
+            await self.__client.start_notify(config.get("IMU_CHARACTERISTIC_UUID"), self.__packet_received)
 
         except Exception as e:
             print("Cannot connect, retrying in 5 seconds...")

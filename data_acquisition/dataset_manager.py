@@ -1,6 +1,7 @@
 from pathlib import Path
 import csv
 from rich import print
+from config import config
 
 class DatasetManager:
 
@@ -10,7 +11,10 @@ class DatasetManager:
         NOTHING = "nothing"
 
     def __init__(self):
-        self.base_path = Path(__file__).parent.absolute() / "dataset"
+        if config.get("DATASET_PATH"):
+            self.base_path = Path(config.get("DATASET_PATH")) / "dataset"
+        else:
+            self.base_path = Path(__file__).parent.absolute() / "dataset"
         self.base_path.mkdir(parents=True, exist_ok=True)
 
         self.forehands_path = self.base_path / self.Label.FOREHAND
@@ -49,7 +53,10 @@ class DatasetManager:
         #save file
         try:
             with open(path, 'w', newline='') as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=["accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ",])
+                header = ["accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ"]
+                if config.get("ID_PRESENT"):
+                    header.insert(0, "id")
+                writer = csv.DictWriter(csvfile, fieldnames=header)
                 writer.writeheader()
 
                 for row in sample:

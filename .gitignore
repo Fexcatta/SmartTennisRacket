@@ -241,3 +241,4 @@ gyr.png
 
 *.onnx
 *.pt
+config.yaml

@@ -33,7 +33,7 @@ pyreadline3==3.4.1; sys_platform == 'win32'
 pyserial==3.5
 python-dateutil==2.8.2
 pytz==2023.3
-PyYAML==6.0; sys_platform == 'win32'
+PyYAML==6.0
 rich==13.3.4
 six==1.16.0
 sympy==1.11.1

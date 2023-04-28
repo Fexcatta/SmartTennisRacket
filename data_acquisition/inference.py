@@ -3,6 +3,7 @@ import onnxruntime
 import pandas as pd
 import numpy as np
 from pathlib import Path
+from config import config
 
 class InferenceEngine():
 
@@ -17,7 +18,7 @@ class InferenceEngine():
         self.__prepare_model()
 
     def __prepare_model(self):
-        if not Path("model.onnx").exists():
+        if not Path(config.get("ONNX_PATH")).exists():
             print("model.onnx file not found")
             return
         
