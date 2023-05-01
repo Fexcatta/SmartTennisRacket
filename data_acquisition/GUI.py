@@ -34,7 +34,7 @@ class MainWindow:
         self.reader = reader
         
         root.title("Data Acquisition")
-        root.geometry("350x450")
+        root.geometry("350x500")
         root.resizable(False, False)
 
         labels = Frame(root,  padx=20, pady=20)
@@ -61,11 +61,17 @@ class MainWindow:
         self.backhand_count_label = Label(labels, text=self.dataset_manager.backhand_count, font=("Helvetica", 24), padx=20, pady=20)
         self.backhand_count_label.grid(row=2, column=1, sticky="e")
 
+        self.serve_label = Label(labels, text="Serve:", font=("Helvetica", 24), padx=20, pady=20)
+        self.serve_label.grid(row=3, column=0, sticky="w")
+
+        self.serve_count_label = Label(labels, text=self.dataset_manager.serve_count, font=("Helvetica", 24), padx=20, pady=20)
+        self.serve_count_label.grid(row=3, column=1, sticky="e")
+
         self.nothing_label = Label(labels, text="Nothing:", font=("Helvetica", 24), padx=20, pady=20)
-        self.nothing_label.grid(row=3, column=0, sticky="w")
+        self.nothing_label.grid(row=4, column=0, sticky="w")
 
         self.nothing_count_label = Label(labels, text=self.dataset_manager.nothing_count, font=("Helvetica", 24), padx=20, pady=20)
-        self.nothing_count_label.grid(row=3, column=1, sticky="e")
+        self.nothing_count_label.grid(row=4, column=1, sticky="e")
 
         self.connection_label = Label(root, text="Not connected", font=("Helvetica", 32), padx=20, pady=20, foreground="red")
         self.connection_label.place(relx=0.5, rely=0.8, anchor="center")
@@ -92,6 +98,7 @@ class MainWindow:
         self.total_count_label.config(text=self.dataset_manager.total_count)
         self.forehand_count_label.config(text=self.dataset_manager.forehand_count)
         self.backhand_count_label.config(text=self.dataset_manager.backhand_count)
+        self.serve_count_label.config(text=self.dataset_manager.serve_count)
         self.nothing_count_label.config(text=self.dataset_manager.nothing_count)
 
 
@@ -127,10 +134,13 @@ class SampleWindow:
         self.backhand_button = Button(buttons, text="Backhand", command=self.backhand, font=("Helvetica", 28))
         self.backhand_button.pack(side="left", padx=10)
 
+        self.serve_button = Button(buttons, text="Serve", command=self.serve, font=("Helvetica", 28))
+        self.serve_button.pack(side="left", padx=10)
+        
         self.nothing_button = Button(buttons, text="Nothing", command=self.nothing, font=("Helvetica", 28))
         self.nothing_button.pack(side="left", padx=10)
 
-        self.delete_button = Button(buttons, text="Delete", command=self.delete, font=("Helvetica", 28))
+        self.delete_button = Button(buttons, text="Delete", command=self.delete, font=("Helvetica", 28), fg="#ff0000")
         self.delete_button.pack(side="left", padx=10)
 
         self.inference_button = Button(buttons, text="Inference", command=self.inference, font=("Helvetica", 28), fg="#ff8700")
@@ -144,6 +154,11 @@ class SampleWindow:
     def backhand(self):
         print("Selected backhand")
         self.dataset_manager.save_sample(self.sample, DatasetManager.Label.BACKHAND)
+        self.root.destroy()
+
+    def serve(self):
+        print("Selected serve")
+        self.dataset_manager.save_sample(self.sample, DatasetManager.Label.SERVE)
         self.root.destroy()
 
     def nothing(self):

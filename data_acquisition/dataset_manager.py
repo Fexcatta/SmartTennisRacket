@@ -8,6 +8,7 @@ class DatasetManager:
     class Label:
         FOREHAND = "forehand"
         BACKHAND = "backhand"
+        SERVE = "serve"
         NOTHING = "nothing"
 
     def __init__(self):
@@ -23,6 +24,9 @@ class DatasetManager:
         self.backhands_path = self.base_path / self.Label.BACKHAND
         self.backhands_path.mkdir(parents=True, exist_ok=True)
 
+        self.serves_path = self.base_path / self.Label.SERVE
+        self.serves_path.mkdir(parents=True, exist_ok=True)
+
         self.nothing_path = self.base_path / self.Label.NOTHING
         self.nothing_path.mkdir(parents=True, exist_ok=True)
 
@@ -31,6 +35,7 @@ class DatasetManager:
     def read_counts(self):
         self.forehand_count = len(list(self.forehands_path.glob("*.csv")))
         self.backhand_count = len(list(self.backhands_path.glob("*.csv")))
+        self.serve_count = len(list(self.serves_path.glob("*.csv")))
         self.nothing_count = len(list(self.nothing_path.glob("*.csv")))
         self.total_count = self.forehand_count + self.backhand_count + self.nothing_count
 
@@ -43,6 +48,9 @@ class DatasetManager:
         elif label == self.Label.BACKHAND:
             filename = f"{self.backhand_count}.csv"
             self.backhand_count += 1
+        elif label == self.Label.SERVE:
+            filename = f"{self.serve_count}.csv"
+            self.serve_count += 1
         elif label == self.Label.NOTHING:
             filename = f"{self.nothing_count}.csv"
             self.nothing_count += 1
