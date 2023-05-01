@@ -62,12 +62,12 @@ class DatasetManager:
         try:
             with open(path, 'w', newline='') as csvfile:
                 header = ["accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ"]
-                if config.get("ID_PRESENT"):
-                    header.insert(0, "id")
                 writer = csv.DictWriter(csvfile, fieldnames=header)
                 writer.writeheader()
 
                 for row in sample:
+                    if "id" in row:
+                        row.pop("id")
                     writer.writerow(row)
 
             print(f"Saved sample to {path}")
