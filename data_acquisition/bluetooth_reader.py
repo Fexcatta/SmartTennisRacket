@@ -95,13 +95,15 @@ class BluetoothReader(Reader):
             chunks = [data[i:i+chunk_size] for i in range(0, len(data), chunk_size)]
 
             for chunk in chunks:
-                # split chunk into 6 floats and optionally 1 int (the id)
-                if config.get("ID_PRESENT"):
-                    vals = [to_int(chunk[-4:])] # last 4 bytes are the id
-                
-                vals.extend([to_float(chunk[i:i+4]) for i in range(0, chunk_size, 4)])
+                # split chunk into 6 floats and optionally 1 int (the id) 
+                vals = []
+                for i in range(0, 6*4, 4):
+                    vals.append(to_float(chunk[i:i+4]))
 
-                labels = ["id", "accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ", ]
+                if config.get("ID_PRESENT"):
+                    vals.append(to_int(chunk[-4:])) # last 4 bytes are the id
+                
+                labels = ["accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ", "id"]
             
                 measurements.append(dict(zip(labels, vals)))
         except Exception as e:
