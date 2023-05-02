@@ -26,6 +26,8 @@ def save_charts(sample):
     ax.plot(df[["gyrX", "gyrY", "gyrZ"]])
     fig.savefig("gyr.png", bbox_inches='tight')
 
+    plt.close("all")
+
 class MainWindow:
     def __init__(self, root, dataset_manager, reader: Reader):
         self.root = root
