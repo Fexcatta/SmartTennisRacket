@@ -242,3 +242,5 @@ gyr.png
 *.onnx
 *.pt
 config.yaml
+
+model_v*/
