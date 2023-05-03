@@ -10,7 +10,8 @@ class InferenceEngine():
     IDX_TO_CLASS = {
         0: "forehand",
         1: "backhand",
-        2: "nothing"
+        2: "nothing",
+        3: "serve"
     }
 
     def __init__(self):
@@ -22,10 +23,11 @@ class InferenceEngine():
             print("model.onnx file not found")
             return
         
-        self.ort_session = onnxruntime.InferenceSession("model.onnx")
+        self.ort_session = onnxruntime.InferenceSession(config.get("ONNX_PATH"))
 
     def __preprocess(self, sample):
         df = pd.DataFrame(sample)
+        df = df.drop('id', axis=1, errors='ignore')
         tensor = df.to_numpy().astype(np.float32)
         tensor = np.expand_dims(tensor, axis=0)
         tensor = np.expand_dims(tensor, axis=0)

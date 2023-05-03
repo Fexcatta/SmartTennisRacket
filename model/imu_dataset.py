@@ -8,13 +8,15 @@ class IMUDataset(Dataset):
     IDX_TO_CLASS = {
         0: "forehand",
         1: "backhand",
-        2: "nothing"
+        2: "nothing",
+        3: "serve"
     }
 
     CLASS_TO_IDX = {
         "forehand": 0,
         "backhand": 1,
-        "nothing": 2
+        "nothing": 2,
+        "serve": 3
     }
 
     def __init__(self, base_path, transform=None):
