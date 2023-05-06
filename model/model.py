@@ -39,9 +39,9 @@ class IMUModelSmall(nn.Module):
             nn.Dropout(0.3),
             nn.MaxPool1d(kernel_size=2, stride=2),
             nn.Flatten(),
-            nn.LazyLinear(40),
+            nn.LazyLinear(30),
             nn.ReLU(),
-            nn.Linear(40, 4),
+            nn.LazyLinear(4),
             nn.LogSoftmax(dim=1)
         )
     
