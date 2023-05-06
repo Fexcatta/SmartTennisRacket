@@ -31,17 +31,17 @@ class IMUModelSmall(nn.Module):
         super(IMUModelSmall, self).__init__()
 
         self.net = nn.Sequential(
-            nn.Conv1d(6, 32, kernel_size=3, stride=3, padding=1),
+            nn.Conv1d(6, 16, kernel_size=3, stride=3, padding=1),
             nn.ReLU(),
             nn.Dropout(0.3),
-            nn.Conv1d(32, 16, kernel_size=3, stride=1, padding=1),
+            nn.Conv1d(16, 8, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.Dropout(0.3),
             nn.MaxPool1d(kernel_size=2, stride=2),
             nn.Flatten(),
-            nn.LazyLinear(50),
+            nn.LazyLinear(40),
             nn.ReLU(),
-            nn.Linear(50, 4),
+            nn.Linear(40, 4),
             nn.LogSoftmax(dim=1)
         )
     

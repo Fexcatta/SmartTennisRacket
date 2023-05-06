@@ -45,6 +45,14 @@ class IMUDataset(Dataset):
         data = pd.read_csv(csv_path, header=0)
         tensor = torch.tensor(data.values).type(torch.float32)
         tensor = tensor.T # from (1000, 6) to (6, 1000)
+
+        # trim last 333 measurements, data centered in 333
+        tensor = tensor[:, :667]
+
+        # trim data to be just 300 measurements
+        m = 300 // 2
+        tensor = tensor[:, 333-m:333+m]
+
         return tensor
 
     def __len__(self):
