@@ -7,19 +7,19 @@
 
 //DEFINE PARAMETERS ----------------------------------
 
-#define DATA_INDEX 1 //1- send debug id; 0- only data
+#define DATA_INDEX 0 //1- send debug id; 0- only data
 #define DATA_INTERVAL_S 3 //how many seconds to acquire data for (including pre-trigger)
 #define DATA_INTERVAL_PRE_TRIGGER_S 1 //how many seconds to save prior to the trigger
 #define DATA_RATE_MS 3 //how many milliseconds between reads of the sensors
 #define TIMER_PRESCALER 6 //prescaler value for the timer used for data acquisition (16MHz / 2^(TIMER_PRESCALER)) [MAX 8]
-#define CRAPPY_MAC 1 //1- send max 6 packets; 0- send maximum amount of packets
+#define CRAPPY_MAC 0 //1- send max 6 or 7 packets (BLE limitations); 0- send maximum amount of packets
 
 //CONSTANTS ------------------------------------------
 
 constexpr unsigned int STRUCT_SIZE = (DATA_INDEX) ? 28 : 24; //size in bytes of the data struct
 
 #if CRAPPY_MAC
-  constexpr unsigned int STRUCT_NUM = 6;
+  constexpr unsigned int STRUCT_NUM = (DATA_INDEX) ? 6 : 7;
 #else
   constexpr unsigned int STRUCT_NUM = (DATA_INDEX) ? 8 : 10; //how many structs to send in a sigle packet (max 10, max 8 when sending id)
 #endif
