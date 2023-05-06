@@ -28,7 +28,7 @@ class InferenceEngine():
     def __preprocess(self, sample):
         df = pd.DataFrame(sample)
         df = df.drop('id', axis=1, errors='ignore')
-        tensor = df.to_numpy().astype(np.float32)
+        tensor = df.to_numpy()
         tensor = tensor.T
         
         window = config.get("MEASUREMENTS_FOR_INFERENCE")
@@ -39,8 +39,17 @@ class InferenceEngine():
             # trim data to be just m*2 measurements, data centered in 333
             m = window // 2
             tensor = tensor[:, 333-m:333+m]
+
+        # normalize
+        means = np.array([  0.2193,   3.6914,  -0.2452, -46.9606,  68.9107, -14.5513])
+        means = np.expand_dims(means, axis=1)
+        stds = np.array([  2.3339,   4.2687,   2.2848, 410.9049, 330.7948, 386.3784])  
+        stds = np.expand_dims(stds, axis=1)
+
+        tensor = (tensor - means) / stds
         
         tensor = np.expand_dims(tensor, axis=0)
+        tensor = tensor.astype(np.float32)
 
         return tensor
 

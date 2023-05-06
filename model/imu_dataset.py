@@ -33,8 +33,11 @@ class IMUDataset(Dataset):
 
         # compute mean and std for normalization
         self.means = torch.stack(self.data).mean(dim=(0,2))
+        print("Dataset means: ", self.means)
         self.means.unsqueeze_(1)
+        
         self.stds = torch.stack(self.data).std(dim=(0,2))
+        print("Dataset stds: ", self.stds)
         self.stds.unsqueeze_(1)
 
 
