@@ -29,7 +29,17 @@ class InferenceEngine():
         df = pd.DataFrame(sample)
         df = df.drop('id', axis=1, errors='ignore')
         tensor = df.to_numpy().astype(np.float32)
-        tensor = np.expand_dims(tensor, axis=0)
+        tensor = tensor.T
+        
+        window = config.get("MEASUREMENTS_FOR_INFERENCE")
+
+        if window > 666:
+            tensor = tensor[:, :window]
+        else:
+            # trim data to be just m*2 measurements, data centered in 333
+            m = window // 2
+            tensor = tensor[:, 333-m:333+m]
+        
         tensor = np.expand_dims(tensor, axis=0)
 
         return tensor
