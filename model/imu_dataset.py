@@ -19,9 +19,8 @@ class IMUDataset(Dataset):
         "serve": 3
     }
 
-    def __init__(self, base_path, transform=None):
+    def __init__(self, base_path):
         self.base_path = Path(base_path)
-        self.transform = transform
         self.data = []
         self.labels = []
 
@@ -38,7 +37,7 @@ class IMUDataset(Dataset):
         """
         data = pd.read_csv(csv_path, header=0)
         tensor = torch.tensor(data.values).type(torch.float32)
-        tensor = tensor.unsqueeze(0) # add channel dimension
+        tensor = tensor.T # from (1000, 6) to (6, 1000)
         return tensor
 
     def __len__(self):
@@ -47,6 +46,21 @@ class IMUDataset(Dataset):
     def __getitem__(self, idx):
         data = self.data[idx]
         label = self.labels[idx]
-        if self.transform:
-            data = self.transform(data)
+        data = self.__normalize(data)
+        
         return data, label
+    
+    def __normalize(self, tensor):
+        return tensor
+    
+        """samples = [d for d,l in list(dataset)]
+
+        # compute mean and std
+        mean = torch.stack(samples).mean(dim=(0,2)) # [  0.1352,   0.9354,  -0.0871, -18.0559,  32.6679,  -7.0598]
+        std = torch.stack(samples).std(dim=(0,2)) # [  1.4614,   3.0519,   1.3878, 241.3652, 228.0653, 239.8968]
+        mean, std
+        
+        min = torch.min(data)
+        max = torch.max(data)
+        data = (data - min) / (max - min)
+        return data"""
