@@ -31,6 +31,13 @@ class IMUDataset(Dataset):
                     self.data.append(self.read_sample(csv_path))
                     self.labels.append(self.CLASS_TO_IDX[d.name])
 
+        # compute mean and std for normalization
+        self.means = torch.stack(self.data).mean(dim=(0,2))
+        self.means.unsqueeze_(1)
+        self.stds = torch.stack(self.data).std(dim=(0,2))
+        self.stds.unsqueeze_(1)
+
+
     def read_sample(self, csv_path):
         """
         Read a sample from a csv file and return it as a tensor
@@ -51,16 +58,6 @@ class IMUDataset(Dataset):
         return data, label
     
     def __normalize(self, tensor):
-        return tensor
-    
-        """samples = [d for d,l in list(dataset)]
+        tensor = (tensor - self.means) / self.stds
 
-        # compute mean and std
-        mean = torch.stack(samples).mean(dim=(0,2)) # [  0.1352,   0.9354,  -0.0871, -18.0559,  32.6679,  -7.0598]
-        std = torch.stack(samples).std(dim=(0,2)) # [  1.4614,   3.0519,   1.3878, 241.3652, 228.0653, 239.8968]
-        mean, std
-        
-        min = torch.min(data)
-        max = torch.max(data)
-        data = (data - min) / (max - min)
-        return data"""
+        return tensor
