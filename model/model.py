@@ -42,7 +42,7 @@ class IMUModelSmall(nn.Module):
             nn.LazyLinear(20),
             nn.ReLU(),
             nn.LazyLinear(4),
-            nn.LogSoftmax(dim=1)
+            nn.Softmax(dim=1)
         )
     
     def forward(self, x):
