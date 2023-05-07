@@ -1,5 +1,6 @@
 import torch.nn as nn
 from torchvision.models import resnet18
+from normalize import Normalize
 
 class IMUModelBig(nn.Module):
 
@@ -27,14 +28,14 @@ class IMUModelBig(nn.Module):
 
 class IMUModelSmall(nn.Module):
 
-    def __init__(self):
+    def __init__(self, means, stds):
         super(IMUModelSmall, self).__init__()
 
         self.net = nn.Sequential(
-            nn.Conv1d(6, 8, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(), 
+            Normalize(means=means, stds=stds),
+            nn.AvgPool1d(kernel_size=3, stride=2),
             nn.Dropout(0.2),
-            nn.Conv1d(8, 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv1d(6, 4, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.Dropout(0.2),
             nn.MaxPool1d(kernel_size=2, stride=2),
