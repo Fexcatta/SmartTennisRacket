@@ -1,13 +1,27 @@
 # Model
-This is the deep learning model of the project.
+This is the deep learning model of the project made in pytorch
 
 ## Model Architecture
-Currently it is a ResNet-18 model (used as a testbench) with a custom head and tail.
-
-In particular `conv1` layer is replaced with a similar 7x7 conv layer with only 1 channel.
-The fully connected layer is replaced with a Sequential block as follows:
- - `Linear(512, 256)`
- - `ReLU()`
- - `Dropout(0.4)`
- - `Linear(256, 3)`
- - `LogSoftmax(dim=1)`
+```
+=================================================================
+Layer (type:depth-idx)                   Param #
+=================================================================
+├─Sequential: 1-1                        --
+|    └─Normalize: 2-1                    --
+|    └─AvgPool1d: 2-2                    --
+|    └─Dropout: 2-3                      --
+|    └─Conv1d: 2-4                       76
+|    └─ReLU: 2-5                         --
+|    └─Dropout: 2-6                      --
+|    └─MaxPool1d: 2-7                    --
+|    └─Flatten: 2-8                      --
+|    └─Linear: 2-9                       5,940
+|    └─ReLU: 2-10                        --
+|    └─Linear: 2-11                      84
+|    └─Softmax: 2-12                     --
+=================================================================
+Total params: 6,100
+Trainable params: 6,100
+Non-trainable params: 0
+=================================================================
+```
