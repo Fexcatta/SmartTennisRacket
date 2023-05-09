@@ -1,4 +1,4 @@
-# Model
+# Old model in pytorch
 This is the deep learning model of the project made in pytorch
 
 ## Model Architecture
