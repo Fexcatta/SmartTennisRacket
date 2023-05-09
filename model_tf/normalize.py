@@ -8,5 +8,4 @@ class Normalize(tf.keras.layers.Layer):
         self.stds = stds
 
     def call(self, inputs):
-        m = inputs - self.means
-        return m / self.stds
+        return (inputs - self.means) / self.stds
