@@ -48,21 +48,15 @@ class InferenceEngine():
         if not self.ort_session:
             return "error", 0, 0
              
-        start_time = time.time()
         input_tensor = self.__preprocess(sample)
-        print(input_tensor.shape)
 
         input_name = self.ort_session.get_inputs()[0].name
 
-        print(input_name)
 
         ort_outs = self.ort_session.run(None, {input_name: input_tensor})
         output = ort_outs[0]
 
-        prob = np.max(output, 1) 
-        idx = np.argmax(output, 1)
-        
-        idx = idx[0].item() # item 0 of the batch
-        prob = prob[0].item() # item 0 of the batch
+        # batch 0
+        output = output[0, :]
 
-        return self.IDX_TO_CLASS[idx], prob, time.time() - start_time
+        return {v:output[k] for k, v in self.IDX_TO_CLASS.items()}
