@@ -11,8 +11,9 @@
 #define DATA_INTERVAL_S 3 //how many seconds to acquire data for (including pre-trigger)
 #define DATA_INTERVAL_PRE_TRIGGER_S 1 //how many seconds to save prior to the trigger
 #define DATA_RATE_MS 3 //how many milliseconds between reads of the sensors
+#define TRIGGER_THRESHOLD_G 10 //how many gs to detect before saving and sending data
 #define TIMER_PRESCALER 6 //prescaler value for the timer used for data acquisition (16MHz / 2^(TIMER_PRESCALER)) [MAX 8]
-#define CRAPPY_MAC 0 //1- send max 6 or 7 packets (BLE limitations); 0- send maximum amount of packets
+#define CRAPPY_MAC 1 //1- send max 6 or 7 packets (BLE limitations); 0- send maximum amount of packets
 
 //CONSTANTS ------------------------------------------
 
@@ -41,7 +42,8 @@ constexpr unsigned int DATA_SIZE_POST_TRIGGER = DATA_SIZE - DATA_SIZE_PRE_TRIGGE
 #define FINISHED_SENDING_DATA (packetIndex >= DATA_SIZE)
 #define TRIGGER_IS_FALSE (!trigger)
 #define TRIGGER_IS_TRUE_AND_DATA_BUFFER_NOT_FULL (updateSensors && trigger && bufferIndex < DATA_SIZE)
-
+#define BLE_SUBSCRIBED_AND_DATA_NEEDS_TO_BE_SENT (sensorCharacteristic.subscribed() && sendFlag)
+#define RESET_STATE_AFTER_DATA_IS_SENT (resetFlag)
 
 
 

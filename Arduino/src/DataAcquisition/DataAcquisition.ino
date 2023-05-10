@@ -32,14 +32,12 @@ void setup() {
   TMR::init();
   TMR::tmr3.startTimer();
 
-  //DEBUG init
+  //DEBUG init MACRO
   debugInit;
 
   //BLEsetup
   BLEsetup();
   BLE.advertise();
-
-  debugPrintln("Bluetooth® device active, waiting for connections...");
 }
 
 
@@ -47,50 +45,23 @@ void loop() {
 
   BLEDevice central = BLE.central();
 
-  if (updateSensors) {
+  if (updateSensors) { //if enough time has passed since last data acquisition
 
     acquireData();
 
   }
 
-  if (central) {
+  if (central) {  //if there's a BLE connection
 
-    if (sensorCharacteristic.subscribed() && sendFlag) {
+    if (BLE_SUBSCRIBED_AND_DATA_NEEDS_TO_BE_SENT) {
       sendData();
     }
 
-    if (resetFlag) {
+    if (RESET_STATE_AFTER_DATA_IS_SENT) {
       resetState();
     }
 
   }
-
-
-
-
-
-/*
-
-  //if there's a central device connected
-  if (central) {
-
-    //if there's a BLE connection and we haven't received the trigger event, poll for it
-    if (TRIGGER_IS_FALSE) {
-
-    } else { //if trigger isn't false
-      
-      if (BLE_SUBSCRIBED_AND_DATA_LEFT_TO_SEND) {
-        sendData();
-      }
-
-      if (FINISHED_SENDING_DATA) {
-        resetState();
-      }
-
-    }//end if TRIGGER_IS_FALSE
-
-  } //end if (central)
-  */
 
 } //end loop
 
@@ -113,18 +84,16 @@ void acquireData() {
     debugPrint("Acquired sample with index: ");
     debugPrintln(bufferIndex);
 
-    if (data[bufferIndex].accX >= 10 || data[bufferIndex].accZ >= 10 || data[bufferIndex].accZ >= 10) {
+    if (data[bufferIndex].accX >= TRIGGER_THRESHOLD_G || data[bufferIndex].accZ >= TRIGGER_THRESHOLD_G || data[bufferIndex].accZ >= TRIGGER_THRESHOLD_G) {
       trigger = true;
       bufferStart = bufferIndex;
       samplesSaved = 0;
       debugPrint("Data acquisition started with starting index: ");
       debugPrintln(bufferStart);
     }
-  } else {
+  } else { //trigger is true
 
-
-
-    if (samplesSaved >= DATA_SIZE_POST_TRIGGER-1) {
+    if (samplesSaved >= DATA_SIZE_POST_TRIGGER-1) { //finished acquiring data
       bufferEnd = bufferIndex;
       packetIndex = bufferEnd + 1;
       sendFlag = true;
@@ -140,7 +109,8 @@ void acquireData() {
       debugPrint("\t");
       debugPrint("packetIndex: ");
       debugPrintln(packetIndex);
-    } else {
+
+    } else { //data acquisition hasn't ended
 
       debugPrint("Saving sample n. ");
       debugPrint(samplesSaved);
@@ -150,41 +120,29 @@ void acquireData() {
       samplesSaved += 1;
     }
 
-    
-
-
-
-
   }
 
+  //Circular buffer index
   if (bufferIndex < DATA_SIZE-1) {
     bufferIndex += 1;
   } else {
     bufferIndex = 0;
   }
-  
-
-  
-/*
-  if (bufferIndex >= DATA_SIZE) {
-    TMR::tmr3.stopTimer(); //stop data acquisition timer
-    debugPrintln("Finished acquiring data. Waiting for characteristic subscription to send...");
-  }
-*/
 
 }
 
 void sendData() {
 
+  //Create packet data
   for (uint8_t j = 0; j < STRUCT_NUM; j++) {
 
-    if ((packetIndex+j) >= DATA_SIZE) {
+    if ((packetIndex+j) >= DATA_SIZE) { //circular buffer correction
       packetIndex = -j;
     }
 
     packetBuffer.dataBuffer[j] = data[packetIndex+j];
 
-    if (packetIndex + j == bufferEnd) {
+    if (packetIndex + j == bufferEnd) { //detect all data has been sent
       resetFlag = true;
       sendFlag = false;
     }
