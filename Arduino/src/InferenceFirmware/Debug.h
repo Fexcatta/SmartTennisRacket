@@ -4,7 +4,7 @@
 #include "Constants.h"
 #include "Variables.h"
 
-#define DEBUG 0 //1- DEBUG mode on; 0- DEBUG mode off
+#define DEBUG 1 //1- DEBUG mode on; 0- DEBUG mode off
 
 #if DEBUG
 

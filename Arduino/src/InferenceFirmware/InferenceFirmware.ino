@@ -62,21 +62,24 @@ void loop() {
 
   BLEDevice central = BLE.central();
 
+
+
   if (updateSensors) { //if enough time has passed since last data acquisition
 
     acquireData();
 
   }
 
+  if (inferenceFlag) {
+
+    //inference();
+
+
+  }
+
   if (central) {  //if there's a BLE connection
 
-    if (BLE_SUBSCRIBED_AND_DATA_NEEDS_TO_BE_SENT) {
-      sendData();
-    }
-
-    if (RESET_STATE_AFTER_DATA_IS_SENT) {
-      resetState();
-    }
+  //TODO: send data back with the inference results
 
   }
 
@@ -88,7 +91,7 @@ void acquireData() {
 
   updateSensors = false;
     
-  getIMUdata(data[bufferIndex].accX, data[bufferIndex].accY, data[bufferIndex].accZ, data[bufferIndex].gyrX, data[bufferIndex].gyrY, data[bufferIndex].gyrZ);
+  getIMUdata(sensorData[bufferIndex].accX, sensorData[bufferIndex].accY, sensorData[bufferIndex].accZ, sensorData[bufferIndex].gyrX, sensorData[bufferIndex].gyrY, sensorData[bufferIndex].gyrZ);
 
   #if DATA_INDEX
     data[bufferIndex].id = indexTest;
@@ -101,19 +104,20 @@ void acquireData() {
     debugPrint("Acquired sample with index: ");
     debugPrintln(bufferIndex);
 
-    if (data[bufferIndex].accX >= TRIGGER_THRESHOLD_G || data[bufferIndex].accZ >= TRIGGER_THRESHOLD_G || data[bufferIndex].accZ >= TRIGGER_THRESHOLD_G) {
+    if (abs(sensorData[bufferIndex].accX) >= TRIGGER_THRESHOLD_G || abs(sensorData[bufferIndex].accZ) >= TRIGGER_THRESHOLD_G || abs(sensorData[bufferIndex].accZ) >= TRIGGER_THRESHOLD_G) {
       trigger = true;
       bufferStart = bufferIndex;
       samplesSaved = 0;
       debugPrint("Data acquisition started with starting index: ");
       debugPrintln(bufferStart);
     }
+
   } else { //trigger is true
 
     if (samplesSaved >= DATA_SIZE_POST_TRIGGER-1) { //finished acquiring data
       bufferEnd = bufferIndex;
       packetIndex = bufferEnd + 1;
-      sendFlag = true;
+      inferenceFlag = true;
       TMR::tmr3.stopTimer(); //stop data acquisition timer
       TMR::tmr3.clearTimer();
       debugPrint("Saving sample n. ");
@@ -148,6 +152,43 @@ void acquireData() {
 
 }
 
+
+
+void inference() {
+
+    TfLiteTensor* model_input = interpreter->input(0);
+    
+    //TODO: adjust the buffer to the circular index
+    
+    for (int i = 0; i < 300 * 6; i += 6) {
+      model_input->data.f[i + 0] = sensorData[i].accX;
+      model_input->data.f[i + 1] = sensorData[i].accY;
+      model_input->data.f[i + 2] = sensorData[i].accZ;
+      model_input->data.f[i + 3] = sensorData[i].gyrX;
+      model_input->data.f[i + 4] = sensorData[i].gyrY;
+      model_input->data.f[i + 5] = sensorData[i].gyrZ;
+    }
+
+    TfLiteStatus invoke_status = interpreter->Invoke();
+    if (invoke_status != kTfLiteOk) {
+      MicroPrintf("Invoke failed");
+      return;
+    }
+
+    TfLiteTensor* output = interpreter->output(0);
+
+    //TODO: get ouputs and process them
+    //TODO: exit the function and reset state
+
+
+}
+
+
+
+
+
+
+
 void sendData() {
 
   //Create packet data
@@ -157,12 +198,12 @@ void sendData() {
       packetIndex = -j;
     }
 
-    packetBuffer.dataBuffer[j] = data[packetIndex+j];
+    packetBuffer.dataBuffer[j] = sensorData[packetIndex+j];
 
     if (packetIndex + j == bufferEnd) { //detect all data has been sent
       resetFlag = true;
       sendFlag = false;
-    }\
+    }
   }
 
   debugPrint("Sending packet with packetIndex: ");

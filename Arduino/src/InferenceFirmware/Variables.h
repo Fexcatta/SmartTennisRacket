@@ -27,7 +27,7 @@ struct dataStruct {
 #endif
 
 
-dataStruct data[DATA_SIZE]; //Data acquisition buffer
+dataStruct sensorData[DATA_SIZE]; //Data acquisition buffer
 dataStruct checkData; //Data check buffer
 unsigned int bufferIndex = 0; //Index for the data acquisition buffer
 unsigned int bufferStart; //Start of the buffer
@@ -46,6 +46,7 @@ volatile bool checkSensors = true; //FLAG: used for timing acc&gyro data acquisi
 bool trigger = false; //Flag: used to signal the start of data acquisition (set by the Central over BLE); cleared when data transmission has ended
 bool resetFlag = false;
 bool sendFlag = false;
+bool inferenceFlag = false;
 
 
 
