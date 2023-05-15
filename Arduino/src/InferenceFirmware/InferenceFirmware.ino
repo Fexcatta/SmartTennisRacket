@@ -72,14 +72,22 @@ void loop() {
 
   if (inferenceFlag) {
 
-    //inference();
-
+    inference();
 
   }
 
+
   if (central) {  //if there's a BLE connection
 
-  //TODO: send data back with the inference results
+    if (sendFlag) {
+      sendData();
+    }
+
+  }
+
+  if (resetFlag) {
+
+    resetState();
 
   }
 
@@ -156,29 +164,76 @@ void acquireData() {
 
 void inference() {
 
-    TfLiteTensor* model_input = interpreter->input(0);
-    
-    //TODO: adjust the buffer to the circular index
-    
-    for (int i = 0; i < 300 * 6; i += 6) {
-      model_input->data.f[i + 0] = sensorData[i].accX;
-      model_input->data.f[i + 1] = sensorData[i].accY;
-      model_input->data.f[i + 2] = sensorData[i].accZ;
-      model_input->data.f[i + 3] = sensorData[i].gyrX;
-      model_input->data.f[i + 4] = sensorData[i].gyrY;
-      model_input->data.f[i + 5] = sensorData[i].gyrZ;
-    }
+  unsigned int j = 0;
 
-    TfLiteStatus invoke_status = interpreter->Invoke();
-    if (invoke_status != kTfLiteOk) {
-      MicroPrintf("Invoke failed");
-      return;
-    }
+  inferenceFlag = false;
 
-    TfLiteTensor* output = interpreter->output(0);
+  TfLiteTensor* model_input = interpreter->input(0);
+  
+  //TODO: adjust the buffer to the circular index
+  if ((inferenceBufferStart = bufferStart - 150) < 0) {
+    inferenceBufferStart = DATA_SIZE - inferenceBufferStart;
+    j = inferenceBufferStart;
+  } else {
+    j = inferenceBufferStart;
+  }
 
-    //TODO: get ouputs and process them
-    //TODO: exit the function and reset state
+  debugPrint("Index j start: ");
+  debugPrintln(j);
+
+
+
+  
+  for (int i = 0; i < 300; i++) {
+    model_input->data.f[i * 6 + 0] = sensorData[j].accX;
+    model_input->data.f[i * 6 + 1] = sensorData[j].accY;
+    model_input->data.f[i * 6 + 2] = sensorData[j].accZ;
+    model_input->data.f[i * 6 + 3] = sensorData[j].gyrX;
+    model_input->data.f[i * 6 + 4] = sensorData[j].gyrY;
+    model_input->data.f[i * 6 + 5] = sensorData[j].gyrZ;
+
+    debugPrint("Index j: ");
+    debugPrintln(j);
+
+    debugPrint("Index i * 6: ");
+    debugPrintln(i * 6);
+
+    j = (j + 1) % DATA_SIZE;
+
+  }
+
+  TfLiteStatus invoke_status = interpreter->Invoke();
+  if (invoke_status != kTfLiteOk) {
+    MicroPrintf("Invoke failed");
+    return;
+  }
+
+  TfLiteTensor* output = interpreter->output(0);
+
+  for (uint8_t i = 0; i < 4; i++) {
+    lastInferenceOutput[i] = output->data.f[i];
+  }
+
+  debugPrint("Forehand: ");
+  debugPrintln(output->data.f[0]);
+  
+  debugPrint("Backhand: ");
+  debugPrintln(output->data.f[1]);
+  
+  debugPrint("Nothing: ");
+  debugPrintln(output->data.f[2]);
+  
+  debugPrint("Serve: ");
+  debugPrintln(output->data.f[3]);
+
+
+
+
+
+  //TODO: get ouputs and process them
+  //TODO: exit the function and reset state
+
+  sendFlag = true;
 
 
 }
@@ -191,35 +246,26 @@ void inference() {
 
 void sendData() {
 
-  //Create packet data
-  for (uint8_t j = 0; j < STRUCT_NUM; j++) {
+  sendFlag = false;
 
-    if ((packetIndex+j) >= DATA_SIZE) { //circular buffer correction
-      packetIndex = -j;
-    }
+  char str_buf[128];
 
-    packetBuffer.dataBuffer[j] = sensorData[packetIndex+j];
+  snprintf(str_buf, 128, "Forehand: %.4f\n Backhand: %.4f\n Nothing: %.4f\n Serve: %.4f\n", lastInferenceOutput[0], lastInferenceOutput[1], lastInferenceOutput[2], lastInferenceOutput[3]);
 
-    if (packetIndex + j == bufferEnd) { //detect all data has been sent
-      resetFlag = true;
-      sendFlag = false;
-    }
-  }
+  outputCharacteristic.writeValue(str_buf);
 
-  debugPrint("Sending packet with packetIndex: ");
-  debugPrintln(packetIndex);
+  resetFlag = true;
 
-  sensorCharacteristic.writeValue((byte *) &packetBuffer, CHARACTERISTIC_SIZE);
-  packetIndex += STRUCT_NUM;
 
 }
 
 void resetState() {
 
+  resetFlag = false;
+
   debugPrintln("Resetting state. Ready to acquire new data.");
 
   packetIndex = 0; //reset packet pointer
-  resetFlag = false;
   samplesSaved = 0;
   trigger = false; //update trigger flag
   //bufferIndex = 0; //reset buffer pointer

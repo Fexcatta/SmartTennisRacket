@@ -8,12 +8,14 @@
 
 const char *uuidService = "19B10000-E8F2-537E-4F6C-D104768A1214";
 const char *uuidSensorCharacteristic = "19B10001-E8F2-537E-4F6C-D104768A1214";
+const char *uuidOutputCharacteristic = "19B10003-E8F2-537E-4F6C-D104768A1214";
 const char *namePeripheral = "Arduino Nano 33 BLE";
 
 
 BLEService sensorService(uuidService);
 
 BLECharacteristic sensorCharacteristic(uuidSensorCharacteristic, BLERead | BLEIndicate, CHARACTERISTIC_SIZE, 0);
+BLECharacteristic outputCharacteristic(uuidOutputCharacteristic, BLERead | BLEIndicate, 128, 0);
 
 
 void BLEsetup() {
@@ -27,9 +29,11 @@ void BLEsetup() {
   BLE.setAdvertisedService(sensorService);
 
   sensorService.addCharacteristic(sensorCharacteristic);
+  sensorService.addCharacteristic(outputCharacteristic);
   BLE.addService(sensorService);
 
   sensorCharacteristic.setValue("test");
+  outputCharacteristic.setValue("test");
 
 }
 
