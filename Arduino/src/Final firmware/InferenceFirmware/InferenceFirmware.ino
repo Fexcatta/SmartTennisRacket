@@ -63,7 +63,6 @@ void loop() {
   BLEDevice central = BLE.central();
 
 
-
   if (updateSensors) { //if enough time has passed since last data acquisition
 
     acquireData();
@@ -77,12 +76,13 @@ void loop() {
   }
 
 
-  if (central) {  //if there's a BLE connection
+  if (central && sendFlag) {  //if there's a BLE connection
 
-    if (sendFlag) {
-      sendData();
-    }
+    sendData();
 
+  } else if (!central && sendFlag) {
+
+    resetFlag = true;
   }
 
   if (resetFlag) {
@@ -164,15 +164,16 @@ void acquireData() {
 
 void inference() {
 
+  int inferenceBufferStart;
   unsigned int j = 0;
 
   inferenceFlag = false;
 
   TfLiteTensor* model_input = interpreter->input(0);
   
-  //TODO: adjust the buffer to the circular index
+  //Adjust the buffer to the circular index
   if ((inferenceBufferStart = bufferStart - 150) < 0) {
-    inferenceBufferStart = DATA_SIZE - inferenceBufferStart;
+    inferenceBufferStart = DATA_SIZE + inferenceBufferStart;
     j = inferenceBufferStart;
   } else {
     j = inferenceBufferStart;
@@ -262,6 +263,7 @@ void sendData() {
 void resetState() {
 
   resetFlag = false;
+  sendFlag = false;
 
   debugPrintln("Resetting state. Ready to acquire new data.");
 

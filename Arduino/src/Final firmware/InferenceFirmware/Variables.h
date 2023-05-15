@@ -34,7 +34,6 @@ unsigned int bufferStart; //Start of the buffer
 unsigned int bufferEnd; //End of the buffer
 unsigned int samplesSaved = 0;
 
-int inferenceBufferStart;
 float lastInferenceOutput[4];
 
 
