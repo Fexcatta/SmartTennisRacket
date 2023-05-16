@@ -162,7 +162,26 @@ class BluetoothReader(Reader):
             pass
 
         data = data.decode("utf-8")
-        print("Received inference\n", data)
+
+        # parse inference result
+        result = {}
+        for l in data.splitlines():
+            cls, logit = l.split(":")
+            cls = cls.strip()
+            logit = float(logit.strip())
+            result[cls] = logit
+
+        # pretty print
+        print("", end="\n")
+        
+        m = max(result.values())
+        for k, v in result.items():
+            start_max = "✅[dark_orange]" if v == m else "  "
+            end_max = "[/dark_orange]" if v == m else ""
+
+            print(f"{start_max}{k:<8} {v*100:>5.1f}% {end_max}")
+
+        print("", end="\n")
 
         if self.inference_received_listener:
             self.inference_received_listener(data)
