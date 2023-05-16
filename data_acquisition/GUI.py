@@ -1,7 +1,7 @@
 import tkthread; tkthread.patch()
 from tkinter import Tk, Label, Button, Frame, Image, Toplevel
 from PIL import ImageTk, Image
-from threading import Thread
+from threading import Thread, Timer
 from dataset_manager import DatasetManager
 import matplotlib
 import matplotlib.pyplot as plt
@@ -78,12 +78,15 @@ class MainWindow:
         self.connection_label = Label(root, text="Not connected", font=("Helvetica", 32), padx=20, pady=20, foreground="red")
         self.connection_label.place(relx=0.5, rely=0.8, anchor="center")
 
-        self.read_button = Button(root, text="Send trigger", command=lambda: self.reader.send_trigger(), font=("Helvetica", 24))
-        self.read_button.place(relx=0.5, rely=0.9, anchor="center")
+        #self.live_inference = Button(root, text="Live inference", command=lambda: self.reader.live_inference(), font=("Helvetica", 24))
+        #self.live_inference.place(relx=0.5, rely=0.9, anchor="center")
 
         reader.set_sample_received_listener(self.process_sample)
         reader.set_connection_listener(self.update_connection_state)
     
+    #def live_inference(self):
+    #    Thread(target=self.reader.live_inference).start()
+
     def update_connection_state(self, state):
         if state == Reader.ConnectionState.CONNECTED:
             self.connection_label.config(text="Connected", foreground="#00dd22")
@@ -103,6 +106,26 @@ class MainWindow:
         self.serve_count_label.config(text=self.dataset_manager.serve_count)
         self.nothing_count_label.config(text=self.dataset_manager.nothing_count)
 
+class InferenceWindow:
+
+    def __init__(self, root, reader: Reader):
+        reader.set_inference_received_listener(self.process_inference)
+        self.root = root
+        root.geometry("500x500")
+        root.resizable(False, False)
+
+        self.inference_label = Label(root, text="Nothing", font=("Helvetica", 32), padx=20, pady=20)
+        self.inference_label.place(relx=0.5, rely=0.5, anchor="center")
+
+        self.timer_label = Label(root, text="0", font=("Helvetica", 32), padx=20, pady=20)
+        self.timer_label.place(relx=0.5, rely=0.1, anchor="center")
+
+        Thread(target=self.start_timer).start()
+
+
+    def process_inference(self, inference):
+        self.inference_label.config(text=inference)
+        
 
 class SampleWindow:
     def __init__(self, root, sample, dataset_manager):

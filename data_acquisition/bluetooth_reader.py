@@ -7,6 +7,7 @@ import asyncio
 from rich import print
 from aioconsole import ainput
 from config import config
+from timer_bar import TimerBar
 
 class BluetoothReader(Reader):
 
@@ -59,15 +60,15 @@ class BluetoothReader(Reader):
         if len(self.sample) == 0:
             if self.connection_listener:
                 self.connection_listener(Reader.ConnectionState.RECEIVING)
-            self.progress_bar = tqdm(range(config.get("MEASUREMENTS_PER_SAMPLE")), desc="Receiving sample", unit="m")
+            self.sample_progress_bar = tqdm(range(config.get("MEASUREMENTS_PER_SAMPLE")), desc="Receiving sample", unit="m")
         
         measurements = self.__parse_packet(data)
         self.sample.extend(measurements)
-        self.progress_bar.update(len(measurements))
+        self.sample_progress_bar.update(len(measurements))
         
         # check if sample is complete
         if len(self.sample) == config.get("MEASUREMENTS_PER_SAMPLE"):
-            self.progress_bar.close()
+            self.sample_progress_bar.close()
             if self.connection_listener:
                 self.connection_listener(Reader.ConnectionState.CONNECTED)
 
@@ -139,9 +140,32 @@ class BluetoothReader(Reader):
             if self.connection_listener:
                 self.connection_listener(Reader.ConnectionState.CONNECTED)
             
-            await self.__client.start_notify(config.get("IMU_CHARACTERISTIC_UUID"), self.__packet_received)
+            if not config.get("IMU_CHARACTERISTIC_UUID"):
+                print("IMU_CHARACTERISTIC_UUID not set, cannot receive samples.")
+            else:
+                await self.__client.start_notify(config.get("IMU_CHARACTERISTIC_UUID"), self.__packet_received)
+            
+            if not config.get("INFERENCE_CHARACTERISTIC_UUID"):
+                print("INFERENCE_CHARACTERISTIC_UUID not set, cannot receive inferences.")
+            else:
+                await self.__client.start_notify(config.get("INFERENCE_CHARACTERISTIC_UUID"), self.__inference_packet_received)
 
         except Exception as e:
             print("Cannot connect, retrying in 5 seconds...")
             await asyncio.sleep(5)
             await self.__connect()
+
+    async def __inference_packet_received(self, sender, data):
+        try:
+            self.inference_progress_bar.stop()
+        except:
+            pass
+
+        data = data.decode("utf-8")
+        print("Received inference\n", data)
+
+        if self.inference_received_listener:
+            self.inference_received_listener(data)
+
+        self.inference_progress_bar = TimerBar()
+        self.inference_progress_bar.start()
