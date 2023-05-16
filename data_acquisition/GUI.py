@@ -174,8 +174,12 @@ class SampleWindow:
 
     def inference(self):
         engine = InferenceEngine()
-        c, p, t = engine.predict(self.sample)
-        print(f"Predicted: [dark_orange]{c} ({p*100:.1f}%)[/dark_orange], inference time: [green]{t*1000:.2f}ms[/green]")
+        results = engine.predict(self.sample)
+        results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+
+        for k, v in results:
+            print(f"[dark_orange]{k:<8} {v*100:>5.1f}% [/dark_orange]")
+
         self.root.destroy()
 
 def run_gui(dataset_manager, reader):
