@@ -13,7 +13,7 @@ class DatasetManager:
 
     def __init__(self):
         if config.get("DATASET_PATH"):
-            self.base_path = Path(config.get("DATASET_PATH")) / "dataset"
+            self.base_path = Path(config.get("DATASET_PATH"))
         else:
             self.base_path = Path(__file__).parent.absolute() / "dataset"
         self.base_path.mkdir(parents=True, exist_ok=True)
