@@ -8,8 +8,8 @@
 //DEFINE PARAMETERS ----------------------------------
 
 #define DATA_INDEX 0 //1- send debug id; 0- only data
-#define DATA_INTERVAL_S 3 //how many seconds to acquire data for (including pre-trigger)
-#define DATA_INTERVAL_PRE_TRIGGER_S 1 //how many seconds to save prior to the trigger
+#define DATA_INTERVAL_MS 1000 //how many seconds to acquire data for (including pre-trigger)
+#define DATA_INTERVAL_PRE_TRIGGER_MS 500 //how many seconds to save prior to the trigger
 #define DATA_RATE_MS 3 //how many milliseconds between reads of the sensors
 #define TRIGGER_THRESHOLD_G 10 //how many gs to detect before saving and sending data
 #define TIMER_PRESCALER 6 //prescaler value for the timer used for data acquisition (16MHz / 2^(TIMER_PRESCALER)) [MAX 8]
@@ -29,10 +29,10 @@ constexpr unsigned int CHARACTERISTIC_SIZE = STRUCT_SIZE*STRUCT_NUM; //BLE buffe
 constexpr unsigned int TIMER_CLOCK = 16000000 / (1<<(TIMER_PRESCALER)); //Timer clock value (16Mhz / 2^(TIMER_PRESCALER))
 constexpr unsigned int TIMER_COMPARE_VALUE = (DATA_RATE_MS/1000.0) * TIMER_CLOCK; //Timer Compare register value to have the desired time delay
 
-constexpr unsigned int DATA1 = (unsigned int)( ( (float)DATA_INTERVAL_S/DATA_RATE_MS) * 1000);
-constexpr unsigned int DATA2 = (unsigned int)( ( (float)DATA_INTERVAL_S/DATA_RATE_MS) * 1000) % STRUCT_NUM;
+constexpr unsigned int DATA1 = (unsigned int)( ( (float)DATA_INTERVAL_MS/DATA_RATE_MS));
+constexpr unsigned int DATA2 = (unsigned int)( ( (float)DATA_INTERVAL_MS/DATA_RATE_MS)) % STRUCT_NUM;
 constexpr unsigned int DATA_SIZE = (DATA2 != 0) ? DATA1 + (STRUCT_NUM - DATA2) : DATA1; //How many sensor acquisition to take before sending them
-constexpr unsigned int DATA_SIZE_PRE_TRIGGER = ((float)DATA_INTERVAL_PRE_TRIGGER_S/DATA_INTERVAL_S) * DATA_SIZE; //Buffer size for data taken prior to trigger
+constexpr unsigned int DATA_SIZE_PRE_TRIGGER = ((float)DATA_INTERVAL_PRE_TRIGGER_MS/DATA_INTERVAL_MS) * DATA_SIZE; //Buffer size for data taken prior to trigger
 constexpr unsigned int DATA_SIZE_POST_TRIGGER = DATA_SIZE - DATA_SIZE_PRE_TRIGGER; //Buffer size for data taken after trigger
 
 
