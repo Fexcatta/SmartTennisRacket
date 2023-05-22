@@ -6,28 +6,28 @@ This is the deep learning model of the project made in tensorflow
 _________________________________________________________________
  Layer (type)                Output Shape              Param #   
 =================================================================
- normalize (Normalize)       multiple                  0         
+ normalize_4 (Normalize)     multiple                  0         
                                                                  
- average_pooling1d (AverageP  multiple                 0         
- ooling1D)                                                       
+ conv1d_8 (Conv1D)           multiple                  152       
                                                                  
- dropout (Dropout)           multiple                  0         
+ dropout_12 (Dropout)        multiple                  0         
                                                                  
- conv1d (Conv1D)             multiple                  76        
+ conv1d_9 (Conv1D)           multiple                  100       
                                                                  
- max_pooling1d (MaxPooling1D  multiple                 0         
- )                                                               
+ dropout_13 (Dropout)        multiple                  0         
                                                                  
- flatten (Flatten)           multiple                  0         
+ max_pooling1d_4 (MaxPooling  multiple                 0         
+ 1D)                                                             
                                                                  
- dropout_1 (Dropout)         multiple                  0         
+ flatten_4 (Flatten)         multiple                  0         
                                                                  
- dense (Dense)               multiple                  5940      
+ dropout_14 (Dropout)        multiple                  0         
                                                                  
- dense_1 (Dense)             multiple                  84        
+ dense_4 (Dense)             multiple                  1204      
                                                                  
 =================================================================
-Total params: 6,100
-Trainable params: 6,100
+Total params: 1,456
+Trainable params: 1,456
 Non-trainable params: 0
+_________________________________________________________________
 ```
