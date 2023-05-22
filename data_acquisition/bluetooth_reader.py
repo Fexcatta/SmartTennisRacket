@@ -131,7 +131,7 @@ class BluetoothReader(Reader):
         asyncio.run_coroutine_threadsafe(self.__send_trigger(), self.loop)
 
     async def __connect(self):    
-        self.__client = BleakClient(self.device_address, disconnected_callback=self.__disconnect_callback, timeout=5)
+        self.__client = BleakClient(self.device_address, disconnected_callback=self.__disconnect_callback, timeout=3)
         
         try:
             await self.__client.connect()
@@ -143,16 +143,24 @@ class BluetoothReader(Reader):
             if not config.get("IMU_CHARACTERISTIC_UUID"):
                 print("IMU_CHARACTERISTIC_UUID not set, cannot receive samples.")
             else:
-                await self.__client.start_notify(config.get("IMU_CHARACTERISTIC_UUID"), self.__packet_received)
+                try:
+                    await self.__client.start_notify(config.get("IMU_CHARACTERISTIC_UUID"), self.__packet_received)
+                except:
+                    pass
+
             
             if not config.get("INFERENCE_CHARACTERISTIC_UUID"):
                 print("INFERENCE_CHARACTERISTIC_UUID not set, cannot receive inferences.")
             else:
-                await self.__client.start_notify(config.get("INFERENCE_CHARACTERISTIC_UUID"), self.__inference_packet_received)
+                try:
+                    await self.__client.start_notify(config.get("INFERENCE_CHARACTERISTIC_UUID"), self.__inference_packet_received)
+                except:
+                    pass
 
         except Exception as e:
-            print("Cannot connect, retrying in 5 seconds...")
-            await asyncio.sleep(5)
+            print(e)
+            print("Cannot connect, retrying...")
+            await asyncio.sleep(0.5)
             await self.__connect()
 
     async def __inference_packet_received(self, sender, data):
