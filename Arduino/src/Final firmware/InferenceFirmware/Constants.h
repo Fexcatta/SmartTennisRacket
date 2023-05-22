@@ -11,7 +11,7 @@
 #define DATA_INTERVAL_MS 1000 //how many seconds to acquire data for (including pre-trigger)
 #define DATA_INTERVAL_PRE_TRIGGER_MS 500 //how many seconds to save prior to the trigger
 #define DATA_RATE_MS 3 //how many milliseconds between reads of the sensors
-#define TRIGGER_THRESHOLD_G 10 //how many gs to detect before saving and sending data
+#define TRIGGER_THRESHOLD_G 13 //how many gs to detect before saving and sending data
 #define TIMER_PRESCALER 6 //prescaler value for the timer used for data acquisition (16MHz / 2^(TIMER_PRESCALER)) [MAX 8]
 #define CRAPPY_MAC 1 //1- send max 6 or 7 packets (BLE limitations); 0- send maximum amount of packets
 
