@@ -12,18 +12,16 @@ struct dataStruct {
 
 
 dataStruct sensorData[DATA_SIZE]; //Data acquisition buffer
-dataStruct checkData; //Data check buffer
 unsigned int bufferIndex = 0; //Index for the data acquisition buffer
 unsigned int bufferStart; //Start of the buffer
 
-unsigned int samplesSaved = 0;
+unsigned int samplesSaved = 0; //Keep count of the samples that have been already saved
 
 float lastInferenceOutput[4];
 
 
 volatile bool updateSensors = true; //Flag: used for timing acc&gyro data acquisition (changed by Timer3 callback)
-volatile bool checkSensors = true; //FLAG: used for timing acc&gyro data acquisition to wake up the data acquisition (changed by the Timer3 callback)
-bool trigger = false;
+bool trigger = false; //FLAG: used to signal that data must be saved (acceleration threshold has been reached)
 
 enum statusFlagType : uint8_t {
   DATA_ACQUISITION,

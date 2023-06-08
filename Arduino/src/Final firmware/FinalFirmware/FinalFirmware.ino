@@ -1,12 +1,6 @@
-#define ARDUINO_BLE_SENSE
-
-#ifdef ARDUINO_BLE_SENSE
-  #include <Arduino_BMI270_BMM150.h>
-#endif
-
-
 #include <ArduinoBLE.h>
 #include <nRF52840_Timers.h>
+#include <Arduino_BMI270_BMM150.h>
 
 #include <TensorFlowLite.h>
 #include "tensorflow/lite/micro/all_ops_resolver.h"
@@ -67,7 +61,7 @@ void loop() {
 
   }
 
-  if (STATUS_FLAG == DATA_OUTPUT) {  //if there's a BLE connection
+  if (STATUS_FLAG == DATA_OUTPUT) {
 
     outputGeneration();
 
@@ -171,34 +165,6 @@ void inference() {
 }
 
 
-void updateBLEdata() {
-
-  char str_buf[128];
-
-  snprintf(str_buf, 128, "Forehand: %.4f\n Backhand: %.4f\n Nothing: %.4f\n Serve: %.4f\n", lastInferenceOutput[0], lastInferenceOutput[1], lastInferenceOutput[2], lastInferenceOutput[3]);
-
-  debugCharacteristic.writeValue(str_buf);
-
-  snprintf(str_buf, 128, "Forehand: %i\n Backhand: %i\n Nothing: %i\n Serve: %i\n", outputData.forehand, outputData.backhand, outputData.nothing, outputData.serve);
-
-  outputCharacteristic.writeValue(str_buf);
-
-  STATUS_FLAG = RESET;
-
-}
-
-
-void resetState() {
-
-  samplesSaved = 0;
-  trigger = false; //update trigger flag
-  TMR::tmr3.startTimer();
-
-  STATUS_FLAG = DATA_ACQUISITION;
-
-}
-
-
 void outputGeneration() {
 
   if (lastInferenceOutput[0] >= INFERENCE_THRESHOLD_PROBABILITY) {
@@ -225,32 +191,14 @@ void outputGeneration() {
 }
 
 
+void resetState() {
 
+  samplesSaved = 0;
+  trigger = false; //update trigger flag
+  TMR::tmr3.startTimer();
 
-
-
-
-
-
-
-
-
-
-
-
-
-void dataCheck() {
-
-  checkSensors = false;
-
-  getAcceleration(checkData.accX, checkData.accY, checkData.accZ);
-  
-  if (checkData.accX >= 5 || checkData.accZ >= 5 || checkData.accZ >= 5) {
-
-    trigger = true;
-    TMR::tmr3.startTimer(); //start data acquisition timer
-    TMR::tmr2.stopTimer(); //stop watchdog timer
-
-  }
+  STATUS_FLAG = DATA_ACQUISITION;
 
 }
+
+
