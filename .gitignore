@@ -241,4 +241,5 @@ gyr.png
 *.pt
 config.yaml
 
-model_v*/
+model_v1/
+model_v2/
