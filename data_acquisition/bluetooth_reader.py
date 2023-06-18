@@ -149,11 +149,11 @@ class BluetoothReader(Reader):
                     pass
 
             
-            if not config.get("INFERENCE_CHARACTERISTIC_UUID"):
-                print("INFERENCE_CHARACTERISTIC_UUID not set, cannot receive inferences.")
+            if not config.get("INFERENCE_PROBABILITY_CHARACTERISTIC_UUID"):
+                print("INFERENCE_PROBABILITY_CHARACTERISTIC_UUID not set, cannot receive inferences.")
             else:
                 try:
-                    await self.__client.start_notify(config.get("INFERENCE_CHARACTERISTIC_UUID"), self.__inference_packet_received)
+                    await self.__client.start_notify(config.get("INFERENCE_PROBABILITY_CHARACTERISTIC_UUID"), self.__inference_packet_received)
                 except:
                     pass
 
@@ -179,15 +179,20 @@ class BluetoothReader(Reader):
             logit = float(logit.strip())
             result[cls] = logit
 
+        #normalize to 1 because of quantization
+        outputs_sum = sum(result.values())
+
         # pretty print
         print("", end="\n")
         
         m = max(result.values())
         for k, v in result.items():
+            logit = v/outputs_sum
+
             start_max = "✅[dark_orange]" if v == m else "  "
             end_max = "[/dark_orange]" if v == m else ""
 
-            print(f"{start_max}{k:<8} {v*100:>5.1f}% {end_max}")
+            print(f"{start_max}{k:<8} {logit*100:>5.1f}% {end_max}")
 
         print("", end="\n")
 
