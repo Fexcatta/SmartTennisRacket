@@ -31,12 +31,11 @@ class IMUDataset():
                     self.labels.append(self.CLASS_TO_IDX[d.name])
 
     def compute_means_stds(self):
-        # compute mean and std for normalization
-        means = np.stack(self.data).mean(axis=(0,2)).T
-        means = np.expand_dims(means, axis=1)
-        
-        stds = np.stack(self.data).std(axis=(0,2)).T
-        stds = np.expand_dims(stds, axis=1)
+        """
+        Compute means and stds of the dataset
+        """
+        means = np.stack(self.data).mean(axis=(0,2), keepdims=True)
+        stds = np.stack(self.data).std(axis=(0,2), keepdims=True)
 
         return means, stds
 
