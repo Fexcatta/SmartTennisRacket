@@ -1,50 +1,66 @@
+import torch
 import torch.nn as nn
-from torchvision.models import resnet18
 from normalize import Normalize
 
 class IMUModelBig(nn.Module):
 
-    def __init__(self):
+    def __init__(self, means, stds):
         super(IMUModelBig, self).__init__()
-        self.resnet18 = resnet18(weights="IMAGENET1K_V1")
 
-        for p in self.resnet18.parameters():
-            p.requires_grad = False
+        self.norm = Normalize(means=means, stds=stds)
+        self.conv1 = nn.Conv1d(in_channels=6, out_channels=32, kernel_size=3, stride=2, padding=1)
+        self.conv2 = nn.Conv1d(in_channels=32, out_channels=16, kernel_size=3, stride=1, padding=1)
+        self.dropout1 = nn.Dropout(0.5)
+        self.max_pool = nn.MaxPool1d(kernel_size=2, stride=2)
+        self.flatten = nn.Flatten()
+        self.dense1 = nn.LazyLinear(30)
+        self.dense2 = nn.Linear(30, 4)
+        self.relu = nn.ReLU()
+        self.softmax = nn.Softmax(dim=1)
 
-        # change input channels to 1
-        self.resnet18.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
-        
-        # change output classes to 4
-        self.resnet18.fc = nn.Sequential(
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.Dropout(0.4),
-            nn.Linear(256, 4), 
-            nn.LogSoftmax(dim=1)
-        )
-    
-    def forward(self, x):
-        return self.resnet18(x)
+    def forward(self, inputs):
+        x = self.norm(inputs)
+        x = self.conv1(x)
+        x = self.relu(x)
+        x = self.conv2(x)
+        x = self.relu(x)
+        x = self.dropout1(x)
+        x = self.max_pool(x)
+        x = self.flatten(x)
+        x = self.dense1(x)
+        x = self.relu(x)
+        x = self.dense2(x)
+        x = self.softmax(x)
+        return x
 
 class IMUModelSmall(nn.Module):
 
     def __init__(self, means, stds):
         super(IMUModelSmall, self).__init__()
 
-        self.net = nn.Sequential(
-            Normalize(means=means, stds=stds),
-            nn.AvgPool1d(kernel_size=3, stride=2),
-            nn.Dropout(0.2),
-            nn.Conv1d(6, 4, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.MaxPool1d(kernel_size=2, stride=2),
-            nn.Flatten(),
-            nn.LazyLinear(20),
-            nn.ReLU(),
-            nn.LazyLinear(4),
-            nn.Softmax(dim=1)
-        )
-    
-    def forward(self, x):
-        return self.net(x)
+        self.norm = Normalize(means=means, stds=stds)
+        self.conv1 = nn.Conv1d(in_channels=6, out_channels=8, kernel_size=3, stride=2, padding=1)
+        self.dropout1 = nn.Dropout(0.5)
+        self.conv2 = nn.Conv1d(in_channels=8, out_channels=4, kernel_size=3, stride=1, padding=1)
+        self.dropout2 = nn.Dropout(0.5)
+        self.max_pool = nn.MaxPool1d(kernel_size=2, stride=2)
+        self.flatten = nn.Flatten()
+        self.dropout3 = nn.Dropout(0.5)
+        self.dense = nn.LazyLinear(4)
+        self.relu = nn.ReLU()
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, inputs):
+        x = self.norm(inputs)
+        x = self.conv1(x)
+        x = self.relu(x)
+        x = self.dropout1(x)
+        x = self.conv2(x)
+        x = self.relu(x)
+        x = self.dropout2(x)
+        x = self.max_pool(x)
+        x = self.flatten(x)
+        x = self.dropout3(x)
+        x = self.dense(x)
+        x = self.softmax(x)
+        return x
