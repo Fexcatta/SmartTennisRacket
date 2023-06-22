@@ -39,3 +39,7 @@ Gyroscope ODR: BMI270.ccp(line:226)
 ```c++
   sens_cfg[1].cfg.gyr.odr = BMI2_GYR_ODR_800HZ;
 ```
+
+# nRF52840_Timers
+
+This library allows an Arduino NANO board to initialize and use the nRF52840 hardware timers. It provides simple functions to set the main timer parameters and enable hardware interrupts. The library works with all five timers available to the nRF52840 MCU.
